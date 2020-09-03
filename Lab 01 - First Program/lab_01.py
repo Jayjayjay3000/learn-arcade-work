@@ -1,1 +1,2 @@
-print("h e l l o   w o r l d")
+print("print(\"hello world\")")
+print("print(\"print(\\\"hello world\\\")\")")
