@@ -2,54 +2,9 @@
 
 # Importing libraries
 import arcade
-
-# Making general constants
-WINDOW_WIDTH = 512
-WINDOW_HEIGHT = 512
-BACKGROUND_COLOR = (0, 0, 0)
-MODE_1_TITLE = "Nitro Noir"
-# MODE_2_TITLE = "Nitro Nimbus"
-THIN_LINE_WIDTH = 1/2
-LINE_COLOR = (255, 255, 255)
-DARK_LINE_COLOR = (64, 64, 64)
-CURVE_RENDERING = 1024
-
-# Making specific constants
-# ASK_MODE_LINE_3 = "Which mode do you want to select?"
-# ASK_MODE_LINE_4 = "(Type \"A\" or \"B\", otherwise it won't work)"
-NUMBER_OF_ROAD_LINES = 128
-ROAD_LINE_STARTING_Y_RATIO = 1/20
-ROAD_LINE_STARTING_WIDTH = 2
-ROAD_LINE_WIDTH_DECREASE_RATIO = 1/6
-ROAD_LINE_FREQUENCY = 1/3
-HORIZON_Y_RATIO = 1/2
-MOON_X_RATIO = 4/5
-MOON_Y_RATIO = 7/8
-MOON_TILT = 16
-MOON_RADIUS_RATIO = 1/32
-MOON_PHASE_RATIO = 3/5
-MOON_LINE_WIDTH = 2
-
-# Making constants from other constants
-# ASK_MODE_LINE_1 = "Mode A = " + MODE_1_TITLE
-# ASK_MODE_LINE_2 = "Mode B = " + MODE_2_TITLE
-ROAD_LINE_STARTING_LENGTH_RATIO = 1 - (ROAD_LINE_STARTING_Y_RATIO / HORIZON_Y_RATIO)
-ROAD_LINE_STARTING_Y = ROAD_LINE_STARTING_Y_RATIO * WINDOW_HEIGHT
-ROAD_LINE_STARTING_LENGTH = ROAD_LINE_STARTING_LENGTH_RATIO * WINDOW_WIDTH
-HORIZON_Y = HORIZON_Y_RATIO * WINDOW_HEIGHT
-MOON_X = MOON_X_RATIO * WINDOW_WIDTH
-MOON_Y = MOON_Y_RATIO * WINDOW_HEIGHT
-MOON_RADIUS = MOON_RADIUS_RATIO * WINDOW_HEIGHT
-MOON_DIAMETER = MOON_RADIUS * 2
-
-# Making variables
-# mode = 0
-# mode_name = "Selecting Mode"
-
-# Making variables from constants
-road_line_y = ROAD_LINE_STARTING_Y
-road_line_length = ROAD_LINE_STARTING_LENGTH
-road_line_width = ROAD_LINE_STARTING_WIDTH
+import numpy as np
+import colorsys
+import colorsysplus
 
 
 # Making functions
@@ -78,50 +33,142 @@ def draw_moon_outline(center_x: float, center_y: float, radius: float, phase_rat
                             color, -90, 90, border_width, -tilt_angle, num_segments)
 
 
-# --- Selecting modes (Currently unused) ---
+def draw_road_lines(center_x: float, start_length: float, start_y: float, end_length: float, end_y: float,
+                    amount: int, frequency: float, color,
+                    start_width: float = 1, end_width: float = 1, width_decrease_ratio: float = 1/6,
+                    rainbowness: float = 0):
+    length = start_length
+    y = start_y
+    width = start_width
+    for i in range(amount):
+        draw_cl_horizontal_line(center_x, length, y, color, width)
+        length = end_length * frequency + length * (1 - frequency)
+        y = end_y * frequency + y * (1 - frequency)
+        width = end_width * frequency + width * (1 - width_decrease_ratio)
+        if rainbowness:
+            color = increment_hue(color, rainbowness)
 
-# Asking the user which mode they want
-# print(ASK_MODE_LINE_1)
-# print(ASK_MODE_LINE_2)
-# print(ASK_MODE_LINE_3)
-# print(ASK_MODE_LINE_4)
-# response = input()
 
-# Setting the mode to what they said
-# if response.lower() == "a":
-#     mode = 1
-mode_name = MODE_1_TITLE
-# elif response.lower() == "b":
-#     mode = 2
-#     mode_name = MODE_2_TITLE
+def draw_road(window_width: int, center_x: float, start_length: float, start_y: float, horizon_y: float,
+              road_line_amount: int, road_line_frequency: float, road_color, road_side_color, horizon_color,
+              road_line_start_width: float = 1, road_line_end_width: float = 1,
+              road_side_width: float = 1/2, horizon_width: float = 1, road_line_width_decrease_ratio: float = 1/6,
+              road_rainbowness: float = 0):
+    # Drawing road lines
+    draw_road_lines(center_x, start_length, start_y, 0, horizon_y, road_line_amount, road_line_frequency, road_color,
+                    road_line_start_width, road_line_end_width, road_line_width_decrease_ratio, road_rainbowness)
 
-# --- Making the window ---
+    # Drawing horizon and road-side lines
+    arcade.draw_line(0, 0, center_x, horizon_y, road_side_color, road_side_width)
+    arcade.draw_line(window_width, 0, center_x, horizon_y, road_side_color, road_side_width)
+    draw_horizontal_line(0, window_width, horizon_y, horizon_color, horizon_width)
 
-arcade.open_window(WINDOW_WIDTH, WINDOW_HEIGHT, mode_name, False, True)
-arcade.set_background_color(BACKGROUND_COLOR)
 
-# --- Rendering window ---
+def main():
+    # Making general constants
+    window_width = 512
+    window_height = 512
+    background_color = (0, 0, 0)
+    mode_1_title = "Nitro Noir"
+    mode_2_title = "Nitro Nimbus"
+    thin_line_width = 1/2
+    light_line_color = (255, 255, 255)
+    curve_rendering = 1024
 
-arcade.start_render()
+    # Making specific constants
+    ask_mode_line_3 = "Which mode do you want to select?"
+    ask_mode_line_4 = "(Type \"A\" or \"B\", otherwise it won't work)"
+    not_a_mode_line = "See? I told you it wouldn't work."
+    road_line_amount = 128
+    road_line_starting_y_ratio = 1/20
+    road_line_starting_width = 2
+    road_line_width_decrease_ratio = 1/6
+    mode_2_road_line_starting_color = (255, 0, 0)
+    mode_2_road_line_hue_increment = 1 / np.pi ** 2
+    road_line_frequency = 1/3
+    mode_1_road_side_line_color = (64, 64, 64)
+    horizon_y_ratio = 1/2
+    mode_2_horizon_line_width = 1
+    moon_x_ratio = 4/5
+    moon_y_ratio = 7/8
+    moon_tilt = 16
+    moon_radius_ratio = 1/32
+    moon_phase_ratio = 3/5
+    moon_line_width = 2
+    mode_2_moon_line_color = (0, 255, 255)
 
-# Drawing road lines
-for i in range(NUMBER_OF_ROAD_LINES):
-    draw_cl_horizontal_line(WINDOW_WIDTH / 2, road_line_length, road_line_y, LINE_COLOR, road_line_width)
-    road_line_length = road_line_length * (1 - ROAD_LINE_FREQUENCY)
-    road_line_y = HORIZON_Y * ROAD_LINE_FREQUENCY + road_line_y * (1 - ROAD_LINE_FREQUENCY)
-    road_line_width = road_line_width * (1 - ROAD_LINE_WIDTH_DECREASE_RATIO)
+    # Making constants from other constants
+    ask_mode_line_1 = "Mode A = " + mode_1_title
+    ask_mode_line_2 = "Mode B = " + mode_2_title
+    road_line_starting_length_ratio = 1 - (road_line_starting_y_ratio / horizon_y_ratio)
+    road_line_starting_y = road_line_starting_y_ratio * window_height
+    road_line_starting_length = road_line_starting_length_ratio * window_width
+    horizon_y = horizon_y_ratio * window_height
+    moon_x = moon_x_ratio * window_width
+    moon_y = moon_y_ratio * window_height
+    moon_radius = moon_radius_ratio * window_height
 
-# Drawing horizon and road-side lines
-draw_horizontal_line(0, WINDOW_WIDTH, HORIZON_Y, LINE_COLOR, THIN_LINE_WIDTH)
-arcade.draw_line(0, 0, WINDOW_WIDTH / 2, HORIZON_Y, DARK_LINE_COLOR, THIN_LINE_WIDTH)
-arcade.draw_line(WINDOW_WIDTH, 0, WINDOW_WIDTH / 2, HORIZON_Y, DARK_LINE_COLOR, THIN_LINE_WIDTH)
+    # Making variables
+    mode_name = "Selecting Mode"
+    road_line_color = None
+    road_line_hue_increment = None
+    horizon_line_width = None
+    road_side_line_color = None
+    moon_line_color = None
 
-# Drawing moon
-draw_moon_outline(MOON_X, MOON_Y, MOON_RADIUS, MOON_PHASE_RATIO,
-                  LINE_COLOR, MOON_LINE_WIDTH, MOON_TILT, CURVE_RENDERING)
+    # --- Selecting modes ---
 
-arcade.finish_render()
+    # Asking the user which mode they want
+    print(ask_mode_line_1)
+    print(ask_mode_line_2)
+    print(ask_mode_line_3)
+    print(ask_mode_line_4)
+    response = input()
 
-# --- Running until window closes ---
+    # Setting the mode to what they said
+    if response.lower() == "a":
+        mode_name = mode_1_title
+        road_line_color = light_line_color
+        road_line_hue_increment = 0
+        road_side_line_color = mode_1_road_side_line_color
+        horizon_line_width = thin_line_width
+        moon_line_color = light_line_color
+    elif response.lower() == "b":
+        mode_name = mode_2_title
+        road_line_color = mode_2_road_line_starting_color
+        road_line_hue_increment = mode_2_road_line_hue_increment
+        road_side_line_color = light_line_color
+        horizon_line_width = mode_2_horizon_line_width
+        moon_line_color = mode_2_moon_line_color
+    else:
+        print(not_a_mode_line)
+        quit()
 
-arcade.run()
+    # --- Making the window ---
+
+    arcade.open_window(window_width, window_height, mode_name)
+    arcade.set_background_color(background_color)
+
+    # --- Rendering window ---
+
+    arcade.start_render()
+
+    # Drawing road
+    draw_road(window_width, window_width / 2, road_line_starting_length, road_line_starting_y, horizon_y,
+              road_line_amount, road_line_frequency, road_line_color, road_side_line_color, light_line_color,
+              road_line_starting_width, 0, thin_line_width, horizon_line_width, road_line_width_decrease_ratio,
+              road_line_hue_increment)
+
+    # Drawing moon
+    draw_moon_outline(moon_x, moon_y, moon_radius, moon_phase_ratio,
+                      moon_line_color, moon_line_width, moon_tilt, curve_rendering)
+
+    arcade.finish_render()
+
+    # --- Running until window closes ---
+
+    arcade.run()
+
+
+if __name__ == "__main__":
+    main()
