@@ -3,65 +3,7 @@
 # Importing libraries
 import arcade
 import numpy as np
-import colorsys
-import colorsysplus
-
-
-# Making functions
-def draw_horizontal_line(start_x: float, end_x: float, y: float, color, line_width: float = 1):
-    arcade.draw_line(start_x, y, end_x, y, color, line_width)
-
-
-def draw_cl_horizontal_line(center_x: float, length: float, y: float, color, line_width: float = 1):
-    arcade.draw_line(center_x - length / 2, y, center_x + length / 2, y, color, line_width)
-
-
-def draw_circle_arc_outline(center_x: float, center_y: float, radius: float,
-                            color, start_angle: float, end_angle: float,
-                            border_width: float = 1, tilt_angle: float = 0, num_segments: int = 128):
-    arcade.draw_arc_outline(center_x, center_y, radius * 2, radius * 2,
-                            color, start_angle, end_angle, border_width, tilt_angle, num_segments)
-
-
-def draw_moon_outline(center_x: float, center_y: float, radius: float, phase_ratio: float,
-                      color, border_width: float = 1, tilt_angle: float = 0, num_segments: int = 128):
-    diameter = radius * 2
-    phase = phase_ratio * diameter
-    draw_circle_arc_outline(center_x, center_y, radius,
-                            color, -90, 90, border_width, -tilt_angle, num_segments)
-    arcade.draw_arc_outline(center_x, center_y, phase, diameter,
-                            color, -90, 90, border_width, -tilt_angle, num_segments)
-
-
-def draw_road_lines(center_x: float, start_length: float, start_y: float, end_length: float, end_y: float,
-                    amount: int, frequency: float, color,
-                    start_width: float = 1, end_width: float = 1, width_decrease_ratio: float = 1/6,
-                    rainbowness: float = 0):
-    length = start_length
-    y = start_y
-    width = start_width
-    for i in range(amount):
-        draw_cl_horizontal_line(center_x, length, y, color, width)
-        length = end_length * frequency + length * (1 - frequency)
-        y = end_y * frequency + y * (1 - frequency)
-        width = end_width * frequency + width * (1 - width_decrease_ratio)
-        if rainbowness:
-            color = increment_hue(color, rainbowness)
-
-
-def draw_road(window_width: int, center_x: float, start_length: float, start_y: float, horizon_y: float,
-              road_line_amount: int, road_line_frequency: float, road_color, road_side_color, horizon_color,
-              road_line_start_width: float = 1, road_line_end_width: float = 1,
-              road_side_width: float = 1/2, horizon_width: float = 1, road_line_width_decrease_ratio: float = 1/6,
-              road_rainbowness: float = 0):
-    # Drawing road lines
-    draw_road_lines(center_x, start_length, start_y, 0, horizon_y, road_line_amount, road_line_frequency, road_color,
-                    road_line_start_width, road_line_end_width, road_line_width_decrease_ratio, road_rainbowness)
-
-    # Drawing horizon and road-side lines
-    arcade.draw_line(0, 0, center_x, horizon_y, road_side_color, road_side_width)
-    arcade.draw_line(window_width, 0, center_x, horizon_y, road_side_color, road_side_width)
-    draw_horizontal_line(0, window_width, horizon_y, horizon_color, horizon_width)
+import draw_shapes as draw
 
 
 def main():
@@ -154,13 +96,13 @@ def main():
     arcade.start_render()
 
     # Drawing road
-    draw_road(window_width, window_width / 2, road_line_starting_length, road_line_starting_y, horizon_y,
+    draw.road(window_width, window_width / 2, road_line_starting_length, road_line_starting_y, horizon_y,
               road_line_amount, road_line_frequency, road_line_color, road_side_line_color, light_line_color,
               road_line_starting_width, 0, thin_line_width, horizon_line_width, road_line_width_decrease_ratio,
               road_line_hue_increment)
 
     # Drawing moon
-    draw_moon_outline(moon_x, moon_y, moon_radius, moon_phase_ratio,
+    draw.moon_outline(moon_x, moon_y, moon_radius, moon_phase_ratio,
                       moon_line_color, moon_line_width, moon_tilt, curve_rendering)
 
     arcade.finish_render()
