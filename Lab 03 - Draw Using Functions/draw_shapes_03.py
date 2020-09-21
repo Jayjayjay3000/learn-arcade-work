@@ -1,7 +1,7 @@
 # Importing libraries
 import arcade
 import numpy as np
-import colorsysplus
+import colorsysplus_03 as colorsysplus
 
 
 def horizontal_line(start_x: float, end_x: float, y: float, color, line_width: float = 1):
@@ -41,8 +41,8 @@ def cla_line(center_x: float, center_y: float, length: float, tilt_angle: float,
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param line_width: Width of the line in pixels.
     """
-    length_x = length * np.cos(tilt_angle)
-    length_y = length * np.sin(tilt_angle)
+    length_x = length * np.cos(np.radians(tilt_angle))
+    length_y = length * np.sin(np.radians(tilt_angle))
     arcade.draw_line(center_x - length_x / 2, center_y - length_y / 2, center_x + length_x / 2, center_y + length_y / 2,
                      color, line_width)
 

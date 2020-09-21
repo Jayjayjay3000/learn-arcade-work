@@ -1,7 +1,27 @@
 # Importing libraries
 import arcade
 import numpy as np
-import draw_shapes as draw
+import draw_shapes_03 as draw
+
+
+# Defining draw star functions
+def draw_dim_star(center_x, center_y):
+    draw.cla_line(center_x, center_y, 6, 0, (255, 255, 255), 1/2)
+    draw.cla_line(center_x, center_y, 6, 60, (255, 255, 255), 1/2)
+    draw.cla_line(center_x, center_y, 6, -60, (255, 255, 255), 1/2)
+
+
+def draw_star(center_x, center_y):
+    draw.cla_line(center_x, center_y, 7, 0, (255, 255, 255), 1)
+    draw.cla_line(center_x, center_y, 7, 60, (255, 255, 255), 1)
+    draw.cla_line(center_x, center_y, 7, -60, (255, 255, 255), 1)
+
+
+def draw_bright_star(center_x, center_y):
+    draw.cla_line(center_x, center_y, 8, 0, (255, 255, 255), 1)
+    draw.cla_line(center_x, center_y, 8, 45, (255, 255, 255), 1)
+    draw.cla_line(center_x, center_y, 8, -45, (255, 255, 255), 1)
+    draw.cla_line(center_x, center_y, 8, 90, (255, 255, 255), 1)
 
 
 # Defining main function
@@ -40,6 +60,12 @@ def main():
     moon_phase_ratio = 3/5
     moon_line_width = 2
     mode_2_moon_line_color = (0, 255, 255)
+    dim_star_x_ratio = 1/7
+    dim_star_y_ratio = 8/9
+    star_x_ratio = 3/4
+    star_y_ratio = 3/5
+    bright_star_x_ratio = 1/3
+    bright_star_y_ratio = 3/4
 
     # Making constants from other constants
     ask_mode_line_1 = "Mode A = " + mode_1_title
@@ -51,6 +77,12 @@ def main():
     moon_x = moon_x_ratio * window_width
     moon_y = moon_y_ratio * window_height
     moon_radius = moon_radius_ratio * window_height
+    dim_star_x = dim_star_x_ratio * window_width
+    dim_star_y = dim_star_y_ratio * window_height
+    star_x = star_x_ratio * window_width
+    star_y = star_y_ratio * window_height
+    bright_star_x = bright_star_x_ratio * window_width
+    bright_star_y = bright_star_y_ratio * window_width
 
     # Making variables
     mode_name = "Selecting Mode"
@@ -106,6 +138,11 @@ def main():
     # Drawing moon
     draw.moon_outline(moon_x, moon_y, moon_radius, moon_phase_ratio,
                       moon_line_color, moon_line_width, moon_tilt, curve_rendering)
+
+    # Drawing stars
+    draw_dim_star(dim_star_x, dim_star_y)
+    draw_star(star_x, star_y)
+    draw_bright_star(bright_star_x, bright_star_y)
 
     arcade.finish_render()
 

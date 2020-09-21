@@ -3,7 +3,7 @@
 # Importing libraries
 import arcade
 import numpy as np
-import draw_shapes as draw
+import draw_shapes_02 as draw
 
 
 def main():
