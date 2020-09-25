@@ -62,70 +62,77 @@ def circle_arc_outline(center_x: float, center_y: float, radius: float, color, s
     :param border_width: width of line in pixels.
     :param tilt_angle: angle the arc is tilted.
     :param num_segments: float of triangle segments that make up this circle.
-    Higher is better quality, but slower render time.
+        Higher is better quality, but slower render time.
     """
     arcade.draw_arc_outline(center_x, center_y, radius * 2, radius * 2,
                             color, start_angle, end_angle, border_width, tilt_angle, num_segments)
 
 
-def moon_outline(center_x: float, center_y: float, radius: float, phase_ratio: float, color,
-                 border_width: float = 1, tilt_angle: float = 0, num_segments: int = 128):
+def star(star_object):
+    """
+    Draws a star by drawing an even number of lines pointing out of a central point.
+
+    :param star_object: object used to make star. line_amount is the amount of lines used to make the star.
+    """
+    for line_number in range(star_object.line_amount):
+        # Setting angle variable to prepare for drawing the next line
+        line_angle = 180 * line_number / star_object.line_amount
+
+        # Drawing a line through the star
+        cla_line(star_object.x, star_object.y, star_object.size, line_angle, star_object.color, star_object.line_width)
+
+
+def moon_outline(moon_object, num_segments: int = 128):
     """
     Draws the outline of a crescent moon.
 
-    :param center_x: x position that is the center of the moon.
-    :param center_y: y position that is the center of the moon.
-    :param radius: radius of the moon.
-    :param phase_ratio: how "crescent" the moon is. 0 = half moon, 1 = new moon, -1 = full moon, etc.
-    :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
-    :param border_width: width of lines in pixels.
-    :param tilt_angle: angle the moon is tilted.
+    :param moon_object: object used to make the moon.
+        phase_ratio is how "crescent" the moon is. 0 = half moon, 1 = new moon, -1 = full moon, etc.
     :param num_segments: float of triangle segments that make up this circle.
-    Higher is better quality, but slower render time.
+        Higher is better quality, but slower render time.
     """
-    # Making variables from original variables
-    diameter = radius * 2
-    phase = phase_ratio * diameter
+    # Making variables to prepare for drawing the moon outline
+    diameter = moon_object.size
+    radius = diameter / 2
+    phase = moon_object.phase_ratio * diameter
 
-    # Drawing moon outer line
-    circle_arc_outline(center_x, center_y, radius, color, -90, 90, border_width, -tilt_angle, num_segments)
+    # Drawing the moon's outer arc
+    circle_arc_outline(moon_object.x, moon_object.y, radius, moon_object.color, -90, 90,
+                       moon_object.line_width, -moon_object.tilt_angle, num_segments)
 
-    # Drawing moon inner line
-    arcade.draw_arc_outline(center_x, center_y, phase, diameter,
-                            color, -90, 90, border_width, -tilt_angle, num_segments)
+    # Drawing the moon's inner arc
+    arcade.draw_arc_outline(moon_object.x, moon_object.y, phase, diameter, moon_object.color, -90, 90,
+                            moon_object.line_width, -moon_object.tilt_angle, num_segments)
 
 
-def road_lines(center_x: float, start_length: float, start_y: float, end_length: float, end_y: float,
-               amount: int, frequency: float, color,
-               start_width: float = 1, end_width: float = 1, width_decrease_ratio: float = 1/6, rainbowness: float = 0):
+def road_lines(center_x: float, starting_line, end_length: float, end_y: float, amount: int, frequency: float,
+               end_width: float = 1, width_decrease_ratio: float = 1/6, rainbowness: float = 0):
     """
     Draws a series of perspective lines, reminiscent of a strait road.
 
     :param center_x: x position of road center.
-    :param start_length: length of first road line.
-    :param start_y: y position of first road line.
+    :param starting_line: object used to make the first, bottom line.
     :param end_length: length road lines converge to.
     :param end_y: y position road lines converge to.
-    :param amount: amount of rode lines.
+    :param amount: amount of road lines.
     :param frequency: fraction each road line gets toward the horizon.
-    :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
-    :param start_width: Width of the first road line in pixels.
     :param end_width: Width the road lines converge to in pixels.
     :param width_decrease_ratio: fraction each road line reduces the width toward the end_width.
     :param rainbowness: amount color hue is incremented by each road line.
-    0 = same hue, 1/2 = -1/2 = opposite hue on the color wheel, etc.
+        0 = same hue, 1/2 = -1/2 = opposite hue on the color wheel, etc.
     """
-    # Making variables from original variables
-    length = start_length
-    y = start_y
-    width = start_width
+    # Making variables to prepare for drawing the road lines
+    length = starting_line.size
+    y = starting_line.y
+    color = starting_line.color
+    width = starting_line.line_width
 
-    # Drawing road lines
-    for i in range(amount):
+    # Drawing the road lines
+    for line_number in range(amount):
         # Drawing a road line
         cl_horizontal_line(center_x, length, y, color, width)
 
-        # Changing variables to prepare for drawing a new road line
+        # Changing variables to prepare for drawing the next road line
         length = end_length * frequency + length * (1 - frequency)
         y = end_y * frequency + y * (1 - frequency)
         width = end_width * frequency + width * (1 - width_decrease_ratio)
@@ -133,39 +140,31 @@ def road_lines(center_x: float, start_length: float, start_y: float, end_length:
             color = colorsysplus.increment_hue(color, rainbowness)
 
 
-def road(window_width: int, center_x: float, road_line_start_length: float, road_line_start_y: float, horizon_y: float,
-         road_line_amount: int, road_line_frequency: float, road_color, road_side_color, horizon_color,
-         road_line_start_width: float = 1, road_line_end_width: float = 1, road_side_width: float = 1/2,
-         horizon_width: float = 1, road_line_width_decrease_ratio: float = 1/6, road_rainbowness: float = 0):
+def road(starting_road_line, road_side_lines, horizon_line,
+         window_width: int, center_x: float, road_line_amount: int, road_line_frequency: float,
+         road_line_end_width: float = 1, road_line_width_decrease_ratio: float = 1/6, road_rainbowness: float = 0):
     """
     Draws a perspective view of a strait road, including a horizon line.
 
+    :param starting_road_line: object used to make the first, bottom road line.
+    :param road_side_lines: object used to make the road-side line's color and line width.
+    :param horizon_line: object used to make the horizon line.
     :param window_width: width of the window you are drawing road on. used for drawing the horizon.
     :param center_x: x position of road center.
-    :param road_line_start_length: length of first road line.
-    :param road_line_start_y: y position of first road line.
-    :param horizon_y: y position of horizon line.
-    :param road_line_amount: amount of rode lines.
+    :param road_line_amount: amount of road lines.
     :param road_line_frequency: fraction each road line gets toward the horizon line.
-    :param road_color: color of road lines, specified in a list of 3 or 4 bytes in RGB or RGBA format.
-    :param road_side_color: color of road side lines, specified in a list of 3 or 4 bytes in RGB or RGBA format.
-    :param horizon_color: color of horizon line, specified in a list of 3 or 4 bytes in RGB or RGBA format.
-    :param road_line_start_width: Width of the first road line in pixels.
     :param road_line_end_width: Width the road lines converge to in pixels.
-    :param road_side_width: Width of the road side lines in pixels.
-    :param horizon_width: Width of the horizon line in pixels.
     :param road_line_width_decrease_ratio: fraction each road line reduces the width toward the end_width.
     :param road_rainbowness: amount color of road lines' hue is incremented by each road line.
-    0 = same hue, 1/2 = -1/2 = opposite hue on the color wheel, etc.
+        0 = same hue, 1/2 = -1/2 = opposite hue on the color wheel, etc.
     """
-    # Drawing road lines
-    road_lines(center_x, road_line_start_length, road_line_start_y, 0, horizon_y,
-               road_line_amount, road_line_frequency, road_color,
-               road_line_start_width, road_line_end_width, road_line_width_decrease_ratio, road_rainbowness)
+    # Drawing the road lines
+    road_lines(center_x, starting_road_line, 0, horizon_line.y, road_line_amount, road_line_frequency,
+               road_line_end_width, road_line_width_decrease_ratio, road_rainbowness)
 
-    # Drawing road-side lines
-    arcade.draw_line(0, 0, center_x, horizon_y, road_side_color, road_side_width)
-    arcade.draw_line(window_width, 0, center_x, horizon_y, road_side_color, road_side_width)
+    # Drawing the road-side lines
+    arcade.draw_line(0, 0, center_x, horizon_line.y, road_side_lines.color, road_side_lines.line_width)
+    arcade.draw_line(window_width, 0, center_x, horizon_line.y, road_side_lines.color, road_side_lines.line_width)
 
-    # Drawing horizon
-    horizontal_line(0, window_width, horizon_y, horizon_color, horizon_width)
+    # Drawing the horizon
+    horizontal_line(0, window_width, horizon_line.y, horizon_line.color, horizon_line.line_width)
