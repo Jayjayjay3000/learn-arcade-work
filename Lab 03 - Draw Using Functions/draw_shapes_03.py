@@ -4,6 +4,83 @@ import numpy as np
 import colorsysplus_03 as colorsysplus
 
 
+# Defining classes
+class Able:
+    """
+    Class for generic things you can draw.
+    """
+    def __init__(self):
+        """
+        Creates class attributes.
+        """
+        self.x_ratio = None
+        self.x = None
+        self.y_ratio = None
+        self.y = None
+        self.size_ratio = None
+        self.size = None
+        self.color = None
+        self.line_width = None
+        self.tilt_angle = None
+
+
+class Star(Able):
+    """
+    Class for drawable stars.
+    """
+    def __init__(self):
+        """
+        Creates additional class attributes.
+        """
+        super().__init__()
+        self.line_amount = None
+
+    def draw(self):
+        """
+        Draws a star by drawing an even number of lines pointing out of a central point.
+        """
+        for line_number in range(self.line_amount):
+            # Setting angle variable to prepare for drawing the next line
+            line_angle: float = 180 * line_number / self.line_amount
+
+            # Drawing a line through the star
+            cla_line(self.x, self.y, self.size, line_angle, self.color,
+                     self.line_width)
+
+
+class Moon(Able):
+    """
+    Class for drawable moons.
+    """
+    def __init__(self):
+        """
+        Creates additional class attributes.
+        """
+        super().__init__()
+        self.phase_ratio = None
+
+    def draw_outline(self, num_segments: int = 128):
+        """
+        Draws the outline of a crescent moon.
+
+        :param num_segments: float of triangle segments that make up this circle.
+            Higher is better quality, but slower render time.
+        """
+        # Making variables to prepare for drawing the moon outline
+        diameter: float = self.size
+        radius: float = diameter / 2
+        phase: float = self.phase_ratio * diameter
+
+        # Drawing the moon's outer arc
+        circle_arc_outline(self.x, self.y, radius, self.color, -90, 90,
+                           self.line_width, -self.tilt_angle, num_segments)
+
+        # Drawing the moon's inner arc
+        arcade.draw_arc_outline(self.x, self.y, phase, diameter, self.color, -90, 90,
+                                self.line_width, -self.tilt_angle, num_segments)
+
+
+# Defining functions
 def horizontal_line(start_x: float, end_x: float, y: float, color, line_width: float = 1):
     """
     Draw a horizontal line. Good for saving space by cutting out a parameter.
@@ -41,8 +118,8 @@ def cla_line(center_x: float, center_y: float, length: float, tilt_angle: float,
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param line_width: Width of the line in pixels.
     """
-    length_x = length * np.cos(np.radians(tilt_angle))
-    length_y = length * np.sin(np.radians(tilt_angle))
+    length_x: float = length * np.cos(np.radians(tilt_angle))
+    length_y: float = length * np.sin(np.radians(tilt_angle))
     arcade.draw_line(center_x - length_x / 2, center_y - length_y / 2, center_x + length_x / 2, center_y + length_y / 2,
                      color, line_width)
 
@@ -68,43 +145,6 @@ def circle_arc_outline(center_x: float, center_y: float, radius: float, color, s
                             color, start_angle, end_angle, border_width, tilt_angle, num_segments)
 
 
-def star(star_object):
-    """
-    Draws a star by drawing an even number of lines pointing out of a central point.
-
-    :param star_object: object used to make star. line_amount is the amount of lines used to make the star.
-    """
-    for line_number in range(star_object.line_amount):
-        # Setting angle variable to prepare for drawing the next line
-        line_angle = 180 * line_number / star_object.line_amount
-
-        # Drawing a line through the star
-        cla_line(star_object.x, star_object.y, star_object.size, line_angle, star_object.color, star_object.line_width)
-
-
-def moon_outline(moon_object, num_segments: int = 128):
-    """
-    Draws the outline of a crescent moon.
-
-    :param moon_object: object used to make the moon.
-        phase_ratio is how "crescent" the moon is. 0 = half moon, 1 = new moon, -1 = full moon, etc.
-    :param num_segments: float of triangle segments that make up this circle.
-        Higher is better quality, but slower render time.
-    """
-    # Making variables to prepare for drawing the moon outline
-    diameter = moon_object.size
-    radius = diameter / 2
-    phase = moon_object.phase_ratio * diameter
-
-    # Drawing the moon's outer arc
-    circle_arc_outline(moon_object.x, moon_object.y, radius, moon_object.color, -90, 90,
-                       moon_object.line_width, -moon_object.tilt_angle, num_segments)
-
-    # Drawing the moon's inner arc
-    arcade.draw_arc_outline(moon_object.x, moon_object.y, phase, diameter, moon_object.color, -90, 90,
-                            moon_object.line_width, -moon_object.tilt_angle, num_segments)
-
-
 def road_lines(center_x: float, starting_line, end_length: float, end_y: float, amount: int, frequency: float,
                end_width: float = 1, width_decrease_ratio: float = 1/6, rainbowness: float = 0):
     """
@@ -122,10 +162,10 @@ def road_lines(center_x: float, starting_line, end_length: float, end_y: float, 
         0 = same hue, 1/2 = -1/2 = opposite hue on the color wheel, etc.
     """
     # Making variables to prepare for drawing the road lines
-    length = starting_line.size
-    y = starting_line.y
+    y: float = starting_line.y
+    length: float = starting_line.size
     color = starting_line.color
-    width = starting_line.line_width
+    width: float = starting_line.line_width
 
     # Drawing the road lines
     for line_number in range(amount):
@@ -133,11 +173,11 @@ def road_lines(center_x: float, starting_line, end_length: float, end_y: float, 
         cl_horizontal_line(center_x, length, y, color, width)
 
         # Changing variables to prepare for drawing the next road line
-        length = end_length * frequency + length * (1 - frequency)
-        y = end_y * frequency + y * (1 - frequency)
-        width = end_width * frequency + width * (1 - width_decrease_ratio)
+        length: float = end_length * frequency + length * (1 - frequency)
+        y: float = end_y * frequency + y * (1 - frequency)
         if rainbowness:
             color = colorsysplus.increment_hue(color, rainbowness)
+        width: float = end_width * frequency + width * (1 - width_decrease_ratio)
 
 
 def road(starting_road_line, road_side_lines, horizon_line,

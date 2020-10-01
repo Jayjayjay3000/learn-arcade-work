@@ -2,117 +2,99 @@
 import arcade
 import numpy as np
 import draw_shapes_03 as draw
+import text_03 as text
 
+# Making general constants
+WINDOW_WIDTH: int = 512
+WINDOW_HEIGHT: int = 512
+BACKGROUND_COLOR = (0, 0, 0)
+MODE_0_TITLE: str = "Selecting Mode"
+MODE_1_TITLE: str = "Nitro Noir"
+MODE_2_TITLE: str = "Nitro Nimbus"
+ASK_MODE_LINE_3: str = "Which mode do you want to select?"
+ASK_MODE_LINE_4: str = "(Type \"A\" or \"B\", otherwise it won't work)"
+NOT_A_MODE_LINE: str = "See? I told you it wouldn't work."
+THIN_LINE_WIDTH: float = 1/2
+LIGHT_LINE_COLOR = (255, 255, 255)
+CURVE_RENDERING: int = 1024
+ROAD_LINE_AMOUNT: int = 128
+ROAD_LINE_FREQUENCY: float = 1/3
+ROAD_LINE_WIDTH_DECREASE_RATIO: float = 1/6
+MODE_2_ROAD_LINE_STARTING_COLOR = (255, 0, 0)
+MODE_2_ROAD_LINE_HUE_INCREMENT: float = 1 / np.pi ** 2
+MODE_1_ROAD_SIDE_LINE_COLOR = (64, 64, 64)
+MODE_2_HORIZON_LINE_WIDTH: float = 1
+MODE_2_MOON_LINE_COLOR = (0, 255, 255)
 
-# Defining classes
-class Drawable:
-    def __init__(self):
-        self.x_ratio = None
-        self.x = None
-        self.y_ratio = None
-        self.y = None
-        self.size_ratio = None
-        self.size = None
-        self.color = None
-        self.line_width = None
-        self.tilt_angle = None
-
-
-class Moon(Drawable):
-    def __init__(self):
-        super().__init__()
-        self.phase_ratio = None
-
-
-class Star(Drawable):
-    def __init__(self):
-        super().__init__()
-        self.line_amount = None
+# Making constants from other constants
+ASK_MODE_LINE_1: str = f"Mode A = {MODE_1_TITLE}"
+ASK_MODE_LINE_2: str = f"Mode B = {MODE_2_TITLE}"
+ASK_MODE_LINES: list = [ASK_MODE_LINE_1, ASK_MODE_LINE_2, ASK_MODE_LINE_3, ASK_MODE_LINE_4]
 
 
 # Defining main function
 def main():
+    """
+    Main function of lab 3
+    """
 
     # --- Initiating main function ---
 
-    # Making general constants
-    window_width = 512
-    window_height = 512
-    background_color = (0, 0, 0)
-    mode_1_title = "Nitro Noir"
-    mode_2_title = "Nitro Nimbus"
-    ask_mode_line_3 = "Which mode do you want to select?"
-    ask_mode_line_4 = "(Type \"A\" or \"B\", otherwise it won't work)"
-    not_a_mode_line = "See? I told you it wouldn't work."
-    thin_line_width = 1/2
-    light_line_color = (255, 255, 255)
-    curve_rendering = 1024
-    road_line_amount = 128
-    road_line_frequency = 1/3
-    road_line_width_decrease_ratio = 1/6
-    mode_2_road_line_starting_color = (255, 0, 0)
-    mode_2_road_line_hue_increment = 1 / np.pi ** 2
-    mode_1_road_side_line_color = (64, 64, 64)
-    mode_2_horizon_line_width = 1
-    mode_2_moon_line_color = (0, 255, 255)
-
     # Making class constants
-    starting_road_line = Drawable()
+    starting_road_line: object = draw.Able()
     starting_road_line.y_ratio = 1/20
     starting_road_line.line_width = 2
-    road_side_lines = Drawable()
-    horizon_line = Drawable()
+    road_side_lines: object = draw.Able()
+    horizon_line: object = draw.Able()
     horizon_line.y_ratio = 1/2
-    moon = Moon()
+    moon = draw.Moon()
     moon.x_ratio = 4/5
     moon.y_ratio = 7/8
     moon.size_ratio = 1/16
     moon.line_width = 2
     moon.tilt_angle = 16
     moon.phase_ratio = 3/5
-    dim_star = Star()
+    dim_star = draw.Star()
     dim_star.x_ratio = 1/7
     dim_star.y_ratio = 8/9
     dim_star.size = 6
     dim_star.line_width = 1/2
     dim_star.line_amount = 3
-    star = Star()
+    star = draw.Star()
     star.x_ratio = 3/4
     star.y_ratio = 3/5
     star.size = 7
     star.line_width = 1
     star.line_amount = 3
-    bright_star = Star()
+    bright_star = draw.Star()
     bright_star.x_ratio = 1/3
     bright_star.y_ratio = 3/4
     bright_star.size = 8
     bright_star.line_width = 1
     bright_star.line_amount = 4
 
-    # Making constants from other constants
-    ask_mode_line_1 = f"Mode A = {mode_1_title}"
-    ask_mode_line_2 = f"Mode B = {mode_2_title}"
-    starting_road_line.y = starting_road_line.y_ratio * window_height
+    # Making class constants from other constants
+    starting_road_line.y = starting_road_line.y_ratio * WINDOW_HEIGHT
     starting_road_line.size_ratio = 1 - (starting_road_line.y_ratio / horizon_line.y_ratio)
-    starting_road_line.size = starting_road_line.size_ratio * window_width
-    road_side_lines.line_width = thin_line_width
-    horizon_line.y = horizon_line.y_ratio * window_height
-    horizon_line.color = light_line_color
-    moon.x = moon.x_ratio * window_width
-    moon.y = moon.y_ratio * window_height
-    moon.size = moon.size_ratio * window_height
-    dim_star.x = dim_star.x_ratio * window_width
-    dim_star.y = dim_star.y_ratio * window_height
-    dim_star.color = light_line_color
-    star.x = star.x_ratio * window_width
-    star.y = star.y_ratio * window_height
-    star.color = light_line_color
-    bright_star.x = bright_star.x_ratio * window_width
-    bright_star.y = bright_star.y_ratio * window_width
-    bright_star.color = light_line_color
+    starting_road_line.size = starting_road_line.size_ratio * WINDOW_WIDTH
+    road_side_lines.line_width = THIN_LINE_WIDTH
+    horizon_line.y = horizon_line.y_ratio * WINDOW_HEIGHT
+    horizon_line.color = LIGHT_LINE_COLOR
+    moon.x = moon.x_ratio * WINDOW_WIDTH
+    moon.y = moon.y_ratio * WINDOW_HEIGHT
+    moon.size = moon.size_ratio * WINDOW_HEIGHT
+    dim_star.x = dim_star.x_ratio * WINDOW_WIDTH
+    dim_star.y = dim_star.y_ratio * WINDOW_HEIGHT
+    dim_star.color = LIGHT_LINE_COLOR
+    star.x = star.x_ratio * WINDOW_WIDTH
+    star.y = star.y_ratio * WINDOW_HEIGHT
+    star.color = LIGHT_LINE_COLOR
+    bright_star.x = bright_star.x_ratio * WINDOW_WIDTH
+    bright_star.y = bright_star.y_ratio * WINDOW_WIDTH
+    bright_star.color = LIGHT_LINE_COLOR
 
     # Making variables
-    mode_name = "Selecting Mode"
+    mode_name: str = MODE_0_TITLE
     road_line_hue_increment = None
     starting_road_line.color = None
     road_side_lines.color = None
@@ -122,35 +104,32 @@ def main():
     # --- Selecting mode ---
 
     # Asking the user which mode they would want
-    print(ask_mode_line_1)
-    print(ask_mode_line_2)
-    print(ask_mode_line_3)
-    print(ask_mode_line_4)
-    response = input(">> ")
+    text.print_lines(ASK_MODE_LINES)
+    response: str = input(text.INPUT_LINE)
 
     # Setting the mode to what they said and setting other variables respectively
     if response.lower() == "a":
-        mode_name = mode_1_title
+        mode_name: str = MODE_1_TITLE
         road_line_hue_increment = 0
-        starting_road_line.color = light_line_color
-        road_side_lines.color = mode_1_road_side_line_color
-        horizon_line.line_width = thin_line_width
-        moon.color = light_line_color
+        starting_road_line.color = LIGHT_LINE_COLOR
+        road_side_lines.color = MODE_1_ROAD_SIDE_LINE_COLOR
+        horizon_line.line_width = THIN_LINE_WIDTH
+        moon.color = LIGHT_LINE_COLOR
     elif response.lower() == "b":
-        mode_name = mode_2_title
-        road_line_hue_increment = mode_2_road_line_hue_increment
-        starting_road_line.color = mode_2_road_line_starting_color
-        road_side_lines.color = light_line_color
-        horizon_line.line_width = mode_2_horizon_line_width
-        moon.color = mode_2_moon_line_color
+        mode_name: str = MODE_2_TITLE
+        road_line_hue_increment = MODE_2_ROAD_LINE_HUE_INCREMENT
+        starting_road_line.color = MODE_2_ROAD_LINE_STARTING_COLOR
+        road_side_lines.color = LIGHT_LINE_COLOR
+        horizon_line.line_width = MODE_2_HORIZON_LINE_WIDTH
+        moon.color = MODE_2_MOON_LINE_COLOR
     else:
-        print(not_a_mode_line)
+        print(NOT_A_MODE_LINE)
         quit()
 
     # --- Making window ---
 
-    arcade.open_window(window_width, window_height, mode_name)
-    arcade.set_background_color(background_color)
+    arcade.open_window(WINDOW_WIDTH, WINDOW_HEIGHT, mode_name)
+    arcade.set_background_color(BACKGROUND_COLOR)
 
     # --- Rendering window ---
 
@@ -158,16 +137,16 @@ def main():
 
     # Drawing the road
     draw.road(starting_road_line, road_side_lines, horizon_line,
-              window_width, window_width / 2, road_line_amount, road_line_frequency,
-              0, road_line_width_decrease_ratio, road_line_hue_increment)
+              WINDOW_WIDTH, WINDOW_WIDTH / 2, ROAD_LINE_AMOUNT, ROAD_LINE_FREQUENCY,
+              0, ROAD_LINE_WIDTH_DECREASE_RATIO, road_line_hue_increment)
 
     # Drawing the moon
-    draw.moon_outline(moon, curve_rendering)
+    moon.draw_outline(CURVE_RENDERING)
 
     # Drawing the stars
-    draw.star(dim_star)
-    draw.star(star)
-    draw.star(bright_star)
+    dim_star.draw()
+    star.draw()
+    bright_star.draw()
 
     arcade.finish_render()
 
