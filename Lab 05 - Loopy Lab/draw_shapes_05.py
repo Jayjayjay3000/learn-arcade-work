@@ -122,6 +122,34 @@ def cla_line(center_x: float, center_y: float, length: float, tilt_angle: float,
                      color, line_width)
 
 
+def square_outline(center_x: float, center_y: float, side_length: float, color,
+                   border_width: float = 1, tilt_angle: float = 0):
+    """
+    Draw a square outline.
+
+    :param center_x: x coordinate of square center.
+    :param center_y: y coordinate of square center.
+    :param side_length: length of the square's sides.
+    :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
+    :param border_width: width of the lines, in pixels.
+    :param tilt_angle: rotation of the square. Defaults to zero.
+    """
+    arcade.draw_rectangle_outline(center_x, center_y, side_length, side_length, color, border_width, tilt_angle)
+
+
+def square_filled(center_x: float, center_y: float, side_length: float, color, tilt_angle: float = 0):
+    """
+    Draw a filled-in square.
+
+    :param center_x: x coordinate of square center.
+    :param center_y: y coordinate of square center.
+    :param side_length: length of the square's sides.
+    :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
+    :param tilt_angle: rotation of the square. Defaults to zero.
+    """
+    arcade.draw_rectangle_filled(center_x, center_y, side_length, side_length, color, tilt_angle)
+
+
 def circle_arc_outline(center_x: float, center_y: float, radius: float, color, start_angle: float, end_angle: float,
                        border_width: float = 1, tilt_angle: float = 0, num_segments: int = 128):
     """

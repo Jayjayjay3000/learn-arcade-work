@@ -4,7 +4,7 @@ import numpyplus_04 as npp
 import text_04 as text
 
 # Making constants
-FULL_LINE_SIZE: int = 75
+FULL_LINE_LENGTH: int = 75
 EXPOSITION_LINE_1: str = "You have stolen a magical deck of cards."
 EXPOSITION_LINE_2: str = "You are using the magical cards to power your warping space ship"
 EXPOSITION_LINE_3: str = "so you can outrun (out-warp?) the furious space magicians you stole from."
@@ -132,7 +132,7 @@ def draw_card(hand_numbers: list, player_position: int):
     # Setting the drawn card's value
     new_card_number: int = ((npp.sum_digits(player_position) - 1) % len(CARD_NAMES)) + 1
 
-    # Adding the card value to the hand values
+    # Adding the card value to the list of hand values
     hand_numbers.append(new_card_number)
 
     # Returning the new hand values
@@ -149,7 +149,7 @@ def draw_hand():
     hand_numbers: list = []
 
     # Adding random card values to said hand until it's full
-    for drawing_number in range(HAND_SIZE):
+    for _ in range(HAND_SIZE):
         hand_numbers.append(random.randrange(1, len(CARD_NAMES) + 1))
 
     # Returning the new hand values
@@ -167,8 +167,8 @@ def get_hand_names(hand_numbers: list):
     hand_names: list = []
 
     # Adding card names corresponding to their respective values to said list of hand names
-    for naming_number in range(len(hand_numbers)):
-        hand_names.append(CARD_NAMES[hand_numbers[naming_number] - 1])
+    for current_hand_number in hand_numbers:
+        hand_names.append(CARD_NAMES[current_hand_number - 1])
 
     # Returning the new hand names
     return hand_names
@@ -269,7 +269,7 @@ def use_entire_hand(player_position: int, magician_position: int, hand_numbers: 
     :return: new positions for the player and magicians, as well as a new value of empty for the cards in your hand.
     """
     # Going through every card in the hand and using it
-    for playing_number in range(len(hand_numbers)):
+    for _ in range(len(hand_numbers)):
         # Storing the current card's value
         using_card_number: int = hand_numbers[0]
 
@@ -300,9 +300,9 @@ def main():
     prompt_lines: list = get_prompt_lines(hand_names)
 
     # Giving an exposition on what the heck's happening to the player
-    text.print_full_line(FULL_LINE_SIZE)
+    text.print_full_line(FULL_LINE_LENGTH)
     text.print_lines(EXPOSITION_LINES)
-    text.print_full_line(FULL_LINE_SIZE)
+    text.print_full_line(FULL_LINE_LENGTH)
     print(USE_WHICH_CARD_FIRST_LINE)
 
     # Starting the game
@@ -356,7 +356,7 @@ def main():
 
         # Starting a new turn
         turn += 1
-        text.print_full_line(FULL_LINE_SIZE)
+        text.print_full_line(FULL_LINE_LENGTH)
 
         # Printing information about the player and the magicians
         print(get_turn_info_line(player_position, magician_position))
