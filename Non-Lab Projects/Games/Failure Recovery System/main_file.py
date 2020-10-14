@@ -1,6 +1,6 @@
 # Importing libraries
 import time
-import text_06_5 as text
+import text
 
 # Making constants
 FULL_LINE_LENGTH: int = 120
