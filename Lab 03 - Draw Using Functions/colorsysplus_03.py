@@ -1,5 +1,5 @@
 # Importing libraries
-import colorsys_03 as colorsys
+import colorsys
 
 
 def increment_hue(color, increment: float):

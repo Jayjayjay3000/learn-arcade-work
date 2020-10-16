@@ -1,10 +1,48 @@
 # Importing libraries
 import arcade
 import numpy as np
-import colorsysplus_03 as colorsysplus
+import colorsysplus
 
 
 # Defining classes
+class Window(arcade.Window):
+    def __init__(self, width: int = 800, height: int = 600, title: str = "Arcade Window", background_color=(0, 0, 0),
+                 fullscreen: bool = False, resizable: bool = False, update_rate=1/60, antialiasing: bool = True):
+        super().__init__(width, height, title, fullscreen, resizable, update_rate, antialiasing)
+        self.color = background_color
+        self.drawables: list = []
+
+        arcade.set_background_color(self.color)
+
+    def on_draw(self):
+        arcade.start_render()
+        for current_drawable in self.drawables:
+            if current_drawable.on_draw_method_id is None:
+                print(f"Error: {current_drawable}'s on draw method id is not set")
+                exit()
+            else:
+                current_method_parameter_amount \
+                    = current_drawable.method_parameter_amounts[current_drawable.on_draw_method_id]
+                if 0 <= current_method_parameter_amount <= 1:
+                    current_method_name = current_drawable.method_names[current_drawable.on_draw_method_id]
+                    if current_method_name == "draw":
+                        if current_method_parameter_amount == 0:
+                            current_drawable.draw()
+                        else:
+                            current_drawable.draw(current_drawable.on_draw_parameter)
+                    elif current_method_name == "draw_outline":
+                        if current_method_parameter_amount == 0:
+                            current_drawable.draw_outline()
+                        else:
+                            current_drawable.draw_outline(current_drawable.on_draw_parameter)
+                    else:
+                        print(f"Error: {current_method_name} is not the name of a method in {current_drawable}")
+                        exit()
+                else:
+                    print(f"Error: on draw method code can't handle {current_method_parameter_amount} parameter(s)")
+                    exit()
+
+
 class Able:
     """
     Class for generic things you can draw.
@@ -22,6 +60,10 @@ class Able:
         self.color = None
         self.line_width = None
         self.tilt_angle = None
+        self.method_names: list = []
+        self.method_parameter_amounts: list = []
+        self.on_draw_method_id = None
+        self.on_draw_parameter = None
 
 
 class Star(Able):
@@ -34,6 +76,8 @@ class Star(Able):
         """
         super().__init__()
         self.line_amount = None
+        self.method_names: list = ["draw"]
+        self.method_parameter_amounts: list = [0]
 
     def draw(self):
         """
@@ -57,6 +101,8 @@ class Moon(Able):
         """
         super().__init__()
         self.phase_ratio = None
+        self.method_names: list = ["draw_outline"]
+        self.method_parameter_amounts: list = [1]
 
     def draw_outline(self, num_segments: int = 128):
         """

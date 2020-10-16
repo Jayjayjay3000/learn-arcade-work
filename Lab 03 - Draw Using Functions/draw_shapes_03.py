@@ -5,6 +5,80 @@ import colorsysplus_03 as colorsysplus
 
 
 # Defining classes
+class Window(arcade.Window):
+    """
+    Class for windows.
+    """
+    def __init__(self, width: int = 800, height: int = 600, title: str = "Arcade Window", background_color=(0, 0, 0),
+                 fullscreen: bool = False, resizable: bool = False, update_rate=1 / 60, antialiasing: bool = True):
+        """
+        Constructs a new window as well as set the window's background color.
+
+        :param width: Window width
+        :param height: Window height
+        :param title: Title (appears in title bar)
+        :param background_color: List of 3 or 4 bytes in RGB/RGBA format.
+        :param fullscreen: Should this be full screen?
+        :param resizable: Can the user resize the window?
+        :param update_rate: How frequently to update the window.
+        :param antialiasing: Should OpenGL's anti-aliasing be enabled?
+        """
+        # Making the new window
+        super().__init__(width, height, title, fullscreen, resizable, update_rate, antialiasing)
+
+        # Setting additional class attributes
+        self.color = background_color
+        self.drawables: list = []
+
+        # Setting the window's background color
+        arcade.set_background_color(self.color)
+
+    def on_draw(self):
+        """
+        Draws the objects in the drawables list.
+        """
+        # Starting to render the window
+        arcade.start_render()
+
+        # Looping through all objects in drawables and drawing them
+        for current_drawable in self.drawables:
+            # Checking if the current object's on draw method id has been set
+            if current_drawable.on_draw_method_id is None:
+                print(f"Error: {current_drawable}'s on draw method id is not set")
+                exit()
+            else:
+                # Setting the amount of parameters the drawing method for the current object has
+                current_method_parameter_amount \
+                    = current_drawable.method_parameter_amounts[current_drawable.on_draw_method_id]
+
+                # Checking if there is enough parameters for the code to handle
+                if 0 <= current_method_parameter_amount <= 1:
+                    # Setting the name of the drawing method for the current object
+                    current_method_name = current_drawable.method_names[current_drawable.on_draw_method_id]
+
+                    # Drawing the current object depending on the name of the drawing method
+                    if current_method_name == "draw":
+                        # Drawing the current object depending on how many parameters the method has
+                        if current_method_parameter_amount == 0:
+                            current_drawable.draw()
+                        else:
+                            current_drawable.draw(current_drawable.on_draw_parameter)
+                    elif current_method_name == "draw_outline":
+                        # Drawing the current object depending on how many parameters the method has
+                        if current_method_parameter_amount == 0:
+                            current_drawable.draw_outline()
+                        else:
+                            current_drawable.draw_outline(current_drawable.on_draw_parameter)
+
+                    # Stopping the program for not having a viable method name
+                    else:
+                        print(f"Error: {current_method_name} is not the name of a method in {current_drawable}")
+                        exit()
+                else:
+                    print(f"Error: on draw method code can't handle {current_method_parameter_amount} parameter(s)")
+                    exit()
+
+
 class Able:
     """
     Class for generic things you can draw.
@@ -22,6 +96,10 @@ class Able:
         self.color = None
         self.line_width = None
         self.tilt_angle = None
+        self.method_names: list = []
+        self.method_parameter_amounts: list = []
+        self.on_draw_method_id = None
+        self.on_draw_parameter = None
 
 
 class Star(Able):
@@ -34,6 +112,8 @@ class Star(Able):
         """
         super().__init__()
         self.line_amount = None
+        self.method_names: list = ["draw"]
+        self.method_parameter_amounts: list = [0]
 
     def draw(self):
         """
@@ -57,6 +137,8 @@ class Moon(Able):
         """
         super().__init__()
         self.phase_ratio = None
+        self.method_names: list = ["draw_outline"]
+        self.method_parameter_amounts: list = [1]
 
     def draw_outline(self, num_segments: int = 128):
         """
@@ -120,6 +202,34 @@ def cla_line(center_x: float, center_y: float, length: float, tilt_angle: float,
     length_y: float = length * np.sin(np.radians(tilt_angle))
     arcade.draw_line(center_x - length_x / 2, center_y - length_y / 2, center_x + length_x / 2, center_y + length_y / 2,
                      color, line_width)
+
+
+def square_outline(center_x: float, center_y: float, side_length: float, color,
+                   border_width: float = 1, tilt_angle: float = 0):
+    """
+    Draw a square outline.
+
+    :param center_x: x coordinate of square center.
+    :param center_y: y coordinate of square center.
+    :param side_length: length of the square's sides.
+    :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
+    :param border_width: width of the lines, in pixels.
+    :param tilt_angle: rotation of the square. Defaults to zero.
+    """
+    arcade.draw_rectangle_outline(center_x, center_y, side_length, side_length, color, border_width, tilt_angle)
+
+
+def square_filled(center_x: float, center_y: float, side_length: float, color, tilt_angle: float = 0):
+    """
+    Draw a filled-in square.
+
+    :param center_x: x coordinate of square center.
+    :param center_y: y coordinate of square center.
+    :param side_length: length of the square's sides.
+    :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
+    :param tilt_angle: rotation of the square. Defaults to zero.
+    """
+    arcade.draw_rectangle_filled(center_x, center_y, side_length, side_length, color, tilt_angle)
 
 
 def circle_arc_outline(center_x: float, center_y: float, radius: float, color, start_angle: float, end_angle: float,
