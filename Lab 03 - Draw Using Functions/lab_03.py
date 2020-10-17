@@ -33,14 +33,29 @@ ASK_MODE_LINES: list = [ASK_MODE_LINE_1, ASK_MODE_LINE_2, ASK_MODE_LINE_3, ASK_M
 
 # Defining classes
 class Window(draw.Window):
+    """
+    Class for this lab's window.
+    """
     def __init__(self, title: str = "Default Mode"):
+        """
+        Constructs the window and sets its background color.
+
+        :param title: Title (appears in title bar)
+        """
+        # Making the window and setting its background color
         super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, title, BACKGROUND_COLOR)
+
+        # Creating additional class attributes
         self.starting_road_line = None
         self.road_line_hue_increment = None
         self.road_side_lines = None
         self.horizon_line = None
 
     def on_draw(self):
+        """
+        The window's on draw method.
+        """
+        # Drawing the objects in the drawables list.
         super().on_draw()
 
         # Drawing the road
@@ -58,11 +73,11 @@ def main():
     # --- Initiating main function ---
 
     # Making class constants for the ground
-    starting_road_line: object = draw.Able()
+    starting_road_line = draw.Able()
     starting_road_line.y_ratio = 1/20
     starting_road_line.line_width = 2
     road_side_lines: object = draw.Able()
-    horizon_line: object = draw.Able()
+    horizon_line = draw.Able()
     horizon_line.y_ratio = 1/2
 
     # Making class constants for the sky
@@ -98,23 +113,11 @@ def main():
     bright_star.on_draw_method_id = 0
 
     # Making class constants from other constants
-    starting_road_line.y = starting_road_line.y_ratio * WINDOW_HEIGHT
     starting_road_line.size_ratio = 1 - (starting_road_line.y_ratio / horizon_line.y_ratio)
-    starting_road_line.size = starting_road_line.size_ratio * WINDOW_WIDTH
     road_side_lines.line_width = THIN_LINE_WIDTH
-    horizon_line.y = horizon_line.y_ratio * WINDOW_HEIGHT
     horizon_line.color = LIGHT_LINE_COLOR
-    moon.x = moon.x_ratio * WINDOW_WIDTH
-    moon.y = moon.y_ratio * WINDOW_HEIGHT
-    moon.size = moon.size_ratio * WINDOW_HEIGHT
-    dim_star.x = dim_star.x_ratio * WINDOW_WIDTH
-    dim_star.y = dim_star.y_ratio * WINDOW_HEIGHT
     dim_star.color = LIGHT_LINE_COLOR
-    star.x = star.x_ratio * WINDOW_WIDTH
-    star.y = star.y_ratio * WINDOW_HEIGHT
     star.color = LIGHT_LINE_COLOR
-    bright_star.x = bright_star.x_ratio * WINDOW_WIDTH
-    bright_star.y = bright_star.y_ratio * WINDOW_WIDTH
     bright_star.color = LIGHT_LINE_COLOR
 
     # Making variables
@@ -152,12 +155,23 @@ def main():
 
     # --- Making window ---
 
+    # Making class constants for the window
     window: object = Window(mode_name)
     window.starting_road_line = starting_road_line
     window.road_line_hue_increment = road_line_hue_increment
     window.road_side_lines = road_side_lines
     window.horizon_line = horizon_line
     window.drawables = [moon, dim_star, star, bright_star]
+
+    # Making constants from window class constants
+    starting_road_line.set_y_from_ratio(window)
+    starting_road_line.set_size_from_ratio(window)
+    horizon_line.set_y_from_ratio(window)
+    moon.set_position_from_ratio(window)
+    moon.set_size_from_ratio(window, False)
+    dim_star.set_position_from_ratio(window)
+    star.set_position_from_ratio(window)
+    bright_star.set_position_from_ratio(window)
 
     # --- Running until window closes ---
 

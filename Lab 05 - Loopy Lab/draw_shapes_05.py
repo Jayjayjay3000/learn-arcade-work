@@ -6,35 +6,71 @@ import colorsysplus
 
 # Defining classes
 class Window(arcade.Window):
+    """
+    Class for windows.
+    """
     def __init__(self, width: int = 800, height: int = 600, title: str = "Arcade Window", background_color=(0, 0, 0),
                  fullscreen: bool = False, resizable: bool = False, update_rate=1/60, antialiasing: bool = True):
+        """
+        Constructs a new window as well as set the window's background color.
+
+        :param width: Window width
+        :param height: Window height
+        :param title: Title (appears in title bar)
+        :param background_color: List of 3 or 4 bytes in RGB/RGBA format.
+        :param fullscreen: Should this be full screen?
+        :param resizable: Can the user resize the window?
+        :param update_rate: How frequently to update the window.
+        :param antialiasing: Should OpenGL's anti-aliasing be enabled?
+        """
+        # Making the new window
         super().__init__(width, height, title, fullscreen, resizable, update_rate, antialiasing)
+
+        # Setting additional class attributes
         self.color = background_color
         self.drawables: list = []
 
+        # Setting the window's background color
         arcade.set_background_color(self.color)
 
     def on_draw(self):
+        """
+        Starts rendering, and draws the objects in the drawables list.
+        """
+        # Starting to render the window
         arcade.start_render()
+
+        # Looping through all objects in drawables and drawing them
         for current_drawable in self.drawables:
+            # Checking if the current object's on draw method id has been set
             if current_drawable.on_draw_method_id is None:
                 print(f"Error: {current_drawable}'s on draw method id is not set")
                 exit()
             else:
+                # Setting the amount of parameters the drawing method for the current object has
                 current_method_parameter_amount \
                     = current_drawable.method_parameter_amounts[current_drawable.on_draw_method_id]
+
+                # Checking if there is enough parameters for the code to handle
                 if 0 <= current_method_parameter_amount <= 1:
+                    # Setting the name of the drawing method for the current object
                     current_method_name = current_drawable.method_names[current_drawable.on_draw_method_id]
+
+                    # Drawing the current object depending on the name of the drawing method
                     if current_method_name == "draw":
+                        # Drawing the current object depending on how many parameters the method has
                         if current_method_parameter_amount == 0:
                             current_drawable.draw()
                         else:
                             current_drawable.draw(current_drawable.on_draw_parameter)
                     elif current_method_name == "draw_outline":
+                        # Drawing the current object depending on how many parameters the method has
                         if current_method_parameter_amount == 0:
                             current_drawable.draw_outline()
                         else:
                             current_drawable.draw_outline(current_drawable.on_draw_parameter)
+
+                    # Stopping the program for not having a viable method name
                     else:
                         print(f"Error: {current_method_name} is not the name of a method in {current_drawable}")
                         exit()
@@ -64,6 +100,44 @@ class Able:
         self.method_parameter_amounts: list = []
         self.on_draw_method_id = None
         self.on_draw_parameter = None
+
+    def set_x_from_ratio(self, window):
+        """
+        Sets this drawable's x-position depending on its ratio to the width of the window it's drawn on.
+
+        :param window: Window this drawable is drawn on.
+        """
+        self.x = self.x_ratio * window.width
+
+    def set_y_from_ratio(self, window):
+        """
+        Sets this drawable's y-position depending on its ratio to the height of the window it's drawn on.
+
+        :param window: Window this drawable is drawn on.
+        """
+        self.y = self.y_ratio * window.height
+
+    def set_position_from_ratio(self, window):
+        """
+        Sets this drawable's position depending on its ratio to the width and height of the window it's drawn on.
+
+        :param window: Window this drawable is drawn on.
+        """
+        self.set_x_from_ratio(window)
+        self.set_y_from_ratio(window)
+
+    def set_size_from_ratio(self, window, use_width: bool = True):
+        """
+        Sets this drawable's size depending on its ratio to the width or height of the window it's drawn on.
+
+        :param window: Window this drawable is drawn on.
+        :param use_width: Whether to use the width or height of the window this is drawn on.
+            Width if true, height if false.
+        """
+        if use_width:
+            self.size = self.size_ratio * window.width
+        else:
+            self.size = self.size_ratio * window.height
 
 
 class Star(Able):
