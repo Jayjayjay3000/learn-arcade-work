@@ -55,8 +55,11 @@ class Window(draw.Window):
         """
         The window's on draw method.
         """
-        # Drawing the objects in the drawables list.
+        # Starting to render the window.
         super().on_draw()
+
+        # Drawing the objects in the drawables list.
+        self.draw_drawables()
 
         # Drawing the road
         draw.road(self.starting_road_line, self.road_side_lines, self.horizon_line,
@@ -88,29 +91,29 @@ def main():
     moon.line_width = 2
     moon.tilt_angle = 16
     moon.phase_ratio = 3/5
-    moon.on_draw_method_id = 0
-    moon.on_draw_parameter = 1024
+    moon.auto_draw_method_id = 0
+    moon.auto_draw_parameter = 1024
     dim_star = draw.Star()
     dim_star.x_ratio = 1/7
     dim_star.y_ratio = 8/9
     dim_star.size = 6
     dim_star.line_width = 1/2
     dim_star.line_amount = 3
-    dim_star.on_draw_method_id = 0
+    dim_star.auto_draw_method_id = 0
     star = draw.Star()
     star.x_ratio = 3/4
     star.y_ratio = 3/5
     star.size = 7
     star.line_width = 1
     star.line_amount = 3
-    star.on_draw_method_id = 0
+    star.auto_draw_method_id = 0
     bright_star = draw.Star()
     bright_star.x_ratio = 1/3
     bright_star.y_ratio = 3/4
     bright_star.size = 8
     bright_star.line_width = 1
     bright_star.line_amount = 4
-    bright_star.on_draw_method_id = 0
+    bright_star.auto_draw_method_id = 0
 
     # Making class constants from other constants
     starting_road_line.size_ratio = 1 - (starting_road_line.y_ratio / horizon_line.y_ratio)

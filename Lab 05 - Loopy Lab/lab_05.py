@@ -3,30 +3,58 @@ import arcade
 import draw_shapes_05 as draw
 
 
+# Defining classes
 class Window(draw.Window):
-    def __init__(self, section_list: list):
+    """
+    Class for this lab's window.
+    """
+    def __init__(self):
+        """
+        Constructs the window and sets its background color.
+        """
         super().__init__(1200, 600, "Lab 05 - Loopy Lab", arcade.color.AIR_FORCE_BLUE)
-        self.sections = section_list
 
     def on_draw(self):
+        """
+        The window's on draw method.
+        """
+        # Starting to render the window.
         super().on_draw()
+
+        # Drawing the objects in the drawables list.
+        self.draw_drawables()
+
         # Drawing the outlines of the sections
         draw_section_outlines()
 
-        # Drawing the sections
-        for current_section in self.sections:
-            current_section.draw()
-
 
 class Section(draw.Able):
+    """
+    Class for sections of this lab.
+    """
     def __init__(self, start_x: int = 0, start_y: int = 0,
                  pattern_id: int = 0, quadrant_id: int = 0, use_center_line: bool = True):
+        """
+        Creates class attributes.
+
+        :param start_x: x position of the lower left corner of the section.
+        :param start_y: y position of the lower left corner of the section.
+        :param pattern_id: number determining which pattern the section will use.
+            0 = all white, 1 = white vertical stripes, 2 = white horizontal stripes, and 3 = white dots.
+        :param quadrant_id: number determining which quadrant to have the ranges be in.
+            0 = the whole section, 1 = the upper-right quadrant, 2 = the upper-left quadrant, etc.
+        :param use_center_line: whether or not to include the central diagonal line.
+            This is unimportant for quadrant_id = 0.
+        """
         super().__init__()
-        self.x = start_x
-        self.y = start_y
-        self.pattern_id = pattern_id
-        self.quadrant_id = quadrant_id
-        self.use_center_line = use_center_line
+        self.x: int = start_x
+        self.y: int = start_y
+        self.pattern_id: int = pattern_id
+        self.quadrant_id: int = quadrant_id
+        self.use_center_line: bool = use_center_line
+        self.method_names: list = ["get_use_white", "get_quadrant_range", "draw"]
+        self.method_parameter_amounts: list = [2, 1, 0]
+        self.auto_draw_method_id = 2
 
     def get_use_white(self, row: int, column: int):
         """
@@ -128,6 +156,14 @@ class Section(draw.Able):
                 # Drawing the square
                 draw.square_filled(current_x, current_y, 5, color)
 
+    def auto_draw(self, parameter=None):
+        """
+        This object's auto draw method. Calls the draw method.
+
+        :param parameter: Parameter for the auto draw function. Is unused.
+        """
+        self.draw()
+
 
 # Defining functions
 def draw_section_outlines():
@@ -146,6 +182,7 @@ def main():
     """
     Main function of lab 5
     """
+    # Making class constants for the sections
     section_1 = Section()
     section_2 = Section(300, 0, 1)
     section_3 = Section(600, 0, 2)
@@ -154,14 +191,12 @@ def main():
     section_6 = Section(300, 300, 0, 3)
     section_7 = Section(600, 300, 0, 2)
     section_8 = Section(900, 300, 0, 1)
-    section_list = [section_1, section_2, section_3, section_4, section_5, section_6, section_7, section_8]
 
-    # --- Making window ---
+    # Making class constants for the window
+    window: object = Window()
+    window.drawables = [section_1, section_2, section_3, section_4, section_5, section_6, section_7, section_8]
 
-    window: object = Window(section_list)
-
-    # --- Running until window closes ---
-
+    # Running the program until the window closes
     arcade.run()
 
 

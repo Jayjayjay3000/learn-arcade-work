@@ -4,13 +4,48 @@ import numpy as np
 import colorsysplus_03 as colorsysplus
 
 
+def auto_draw_method_id_is_none_error(drawable):
+    """
+    Error message for when a drawable's auto draw method id was never set to anything, or was set to none.
+
+    :param drawable: drawable of the auto draw method id.
+    :return: error message.
+    """
+    line = f"Error: {drawable}'s auto draw method id is not set"
+    return line
+
+
+def too_many_auto_draw_parameters_error(parameter_amount: int):
+    """
+    Error message for when the draw drawables method is requested an auto draw method
+    with more parameters than the code is designed to handle.
+
+    :param parameter_amount: amount of parameters the requested auto draw method has.
+    :return: error message.
+    """
+    line = f"Error: draw drawables method code can't handle {parameter_amount} auto draw parameter(s)"
+    return line
+
+
+def not_an_available_method_error(current_class, incorrect_method_name: str = "<<ERROR FAIL>>"):
+    """
+    Error message for when the code expects to find a method with a certain name in a class, and fails to do so.
+
+    :param current_class: class the code is expecting the method to be in.
+    :param incorrect_method_name: the name the code expects a method in a specific class to have.
+    :return: error message.
+    """
+    line = f"Error: {incorrect_method_name} is not the name of a method in {current_class}"
+    return line
+
+
 # Defining classes
 class Window(arcade.Window):
     """
     Class for windows.
     """
     def __init__(self, width: int = 800, height: int = 600, title: str = "Arcade Window", background_color=(0, 0, 0),
-                 fullscreen: bool = False, resizable: bool = False, update_rate=1 / 60, antialiasing: bool = True):
+                 fullscreen: bool = False, resizable: bool = False, update_rate=1/60, antialiasing: bool = True):
         """
         Constructs a new window as well as set the window's background color.
 
@@ -33,50 +68,26 @@ class Window(arcade.Window):
         # Setting the window's background color
         arcade.set_background_color(self.color)
 
+    def draw_drawables(self):
+        """
+        Draws the objects in the drawables list by calling their auto draw methods.
+        """
+        # Looping through all objects in drawables and drawing them
+        for current_drawable in self.drawables:
+            current_drawable.call_auto_draw()
+
+    def on_initial_draw(self):
+        """
+        >> Remember to ask Craven on how to draw something only once using the window class <<
+        """
+        pass
+
     def on_draw(self):
         """
-        Draws the objects in the drawables list.
+        Renders the window.
         """
         # Starting to render the window
         arcade.start_render()
-
-        # Looping through all objects in drawables and drawing them
-        for current_drawable in self.drawables:
-            # Checking if the current object's on draw method id has been set
-            if current_drawable.on_draw_method_id is None:
-                print(f"Error: {current_drawable}'s on draw method id is not set")
-                exit()
-            else:
-                # Setting the amount of parameters the drawing method for the current object has
-                current_method_parameter_amount \
-                    = current_drawable.method_parameter_amounts[current_drawable.on_draw_method_id]
-
-                # Checking if there is enough parameters for the code to handle
-                if 0 <= current_method_parameter_amount <= 1:
-                    # Setting the name of the drawing method for the current object
-                    current_method_name = current_drawable.method_names[current_drawable.on_draw_method_id]
-
-                    # Drawing the current object depending on the name of the drawing method
-                    if current_method_name == "draw":
-                        # Drawing the current object depending on how many parameters the method has
-                        if current_method_parameter_amount == 0:
-                            current_drawable.draw()
-                        else:
-                            current_drawable.draw(current_drawable.on_draw_parameter)
-                    elif current_method_name == "draw_outline":
-                        # Drawing the current object depending on how many parameters the method has
-                        if current_method_parameter_amount == 0:
-                            current_drawable.draw_outline()
-                        else:
-                            current_drawable.draw_outline(current_drawable.on_draw_parameter)
-
-                    # Stopping the program for not having a viable method name
-                    else:
-                        print(f"Error: {current_method_name} is not the name of a method in {current_drawable}")
-                        exit()
-                else:
-                    print(f"Error: on draw method code can't handle {current_method_parameter_amount} parameter(s)")
-                    exit()
 
 
 class Able:
@@ -98,8 +109,8 @@ class Able:
         self.tilt_angle = None
         self.method_names: list = []
         self.method_parameter_amounts: list = []
-        self.on_draw_method_id = None
-        self.on_draw_parameter = None
+        self.auto_draw_method_id = None
+        self.auto_draw_parameter = None
 
     def set_x_from_ratio(self, window):
         """
@@ -139,6 +150,38 @@ class Able:
         else:
             self.size = self.size_ratio * window.height
 
+    def call_auto_draw(self):
+        """
+        Calls this object's auto draw method.
+        """
+        # Checking if the current object's on draw method id has been set
+        if self.auto_draw_method_id is None:
+            print(auto_draw_method_id_is_none_error(self))
+            exit()
+        else:
+            # Setting the amount of parameters the drawing method for the current object has
+            current_method_parameter_amount \
+                = self.method_parameter_amounts[self.auto_draw_method_id]
+
+            # Checking if there is enough parameters for the code to handle
+            if 0 <= current_method_parameter_amount <= 1:
+                # Drawing the current object depending on how many parameters the method has
+                if current_method_parameter_amount == 0:
+                    self.auto_draw()
+                else:
+                    self.auto_draw(self.auto_draw_parameter)
+            else:
+                print(too_many_auto_draw_parameters_error(current_method_parameter_amount))
+                exit()
+
+    def auto_draw(self, parameter=None):
+        """
+        This object's auto draw method.
+
+        :param parameter: Parameter for the auto draw function.
+        """
+        pass
+
 
 class Star(Able):
     """
@@ -164,6 +207,14 @@ class Star(Able):
             # Drawing a line through the star
             cla_line(self.x, self.y, self.size, line_angle, self.color, self.line_width)
 
+    def auto_draw(self, parameter=None):
+        """
+        This object's auto draw method. Calls the draw method.
+
+        :param parameter: Parameter for the auto draw function. Is unused.
+        """
+        self.draw()
+
 
 class Moon(Able):
     """
@@ -182,7 +233,7 @@ class Moon(Able):
         """
         Draws the outline of a crescent moon.
 
-        :param num_segments: float of triangle segments that make up this circle.
+        :param num_segments: float of triangle segments that make up the two arcs this moon is composed of.
             Higher is better quality, but slower render time.
         """
         # Making variables to prepare for drawing the moon outline
@@ -196,6 +247,14 @@ class Moon(Able):
         # Drawing the moon's inner arc
         arcade.draw_arc_outline(self.x, self.y, phase, diameter, self.color, -90, 90,
                                 self.line_width, -self.tilt_angle, num_segments)
+
+    def auto_draw(self, parameter=None):
+        """
+        This object's auto draw method. Calls the draw outline method.
+
+        :param parameter: Parameter for the auto draw function. Is used for the number of segments.
+        """
+        self.draw_outline(parameter)
 
 
 # Defining functions
