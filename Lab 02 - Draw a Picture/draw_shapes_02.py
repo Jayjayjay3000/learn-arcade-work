@@ -10,7 +10,7 @@ def horizontal_line(start_x: float, end_x: float, y: float, color, line_width: f
 
     :param start_x: x position of line starting point.
     :param end_x: x position of line ending point.
-    :param y: image_center_y position of line starting and ending points.
+    :param y: y position of line starting and ending points.
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param line_width: Width of the line in pixels.
     """
@@ -23,7 +23,7 @@ def cl_horizontal_line(center_x: float, length: float, y: float, color, line_wid
 
     :param center_x: x position of line center point.
     :param length: length of line.
-    :param y: image_center_y position of line starting and ending points.
+    :param y: y position of line starting and ending points.
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param line_width: Width of the line in pixels.
     """
@@ -35,7 +35,7 @@ def cla_line(center_x: float, center_y: float, length: float, tilt_angle: float,
     Draw a line by specifying center point, length, and angle tilted counterclockwise from horizontal position.
 
     :param center_x: x position of line center point.
-    :param center_y: image_center_y position of line center point.
+    :param center_y: y position of line center point.
     :param length: length of line.
     :param tilt_angle: angle tilted counterclockwise from horizontal position.
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
@@ -54,7 +54,7 @@ def circle_arc_outline(center_x: float, center_y: float, radius: float, color, s
     Good for saving space by cutting out a parameter.
 
     :param center_x: x position that is the center of the arc.
-    :param center_y: image_center_y position that is the center of the arc.
+    :param center_y: y position that is the center of the arc.
     :param radius: radius of the arc.
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param start_angle: start angle of the arc in degrees.
@@ -74,7 +74,7 @@ def moon_outline(center_x: float, center_y: float, radius: float, phase_ratio: f
     Draws the outline of a crescent moon.
 
     :param center_x: x position that is the center of the moon.
-    :param center_y: image_center_y position that is the center of the moon.
+    :param center_y: y position that is the center of the moon.
     :param radius: radius of the moon.
     :param phase_ratio: how "crescent" the moon is. 0 = half moon, 1 = new moon, -1 = full moon, etc.
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
@@ -103,9 +103,9 @@ def road_lines(center_x: float, start_length: float, start_y: float, end_length:
 
     :param center_x: x position of road center.
     :param start_length: length of first road line.
-    :param start_y: image_center_y position of first road line.
+    :param start_y: y position of first road line.
     :param end_length: length road lines converge to.
-    :param end_y: image_center_y position road lines converge to.
+    :param end_y: y position road lines converge to.
     :param amount: amount of rode lines.
     :param frequency: fraction each road line gets toward the horizon.
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
@@ -143,8 +143,8 @@ def road(window_width: int, center_x: float, road_line_start_length: float, road
     :param window_width: width of the window you are drawing road on. used for drawing the horizon.
     :param center_x: x position of road center.
     :param road_line_start_length: length of first road line.
-    :param road_line_start_y: image_center_y position of first road line.
-    :param horizon_y: image_center_y position of horizon line.
+    :param road_line_start_y: y position of first road line.
+    :param horizon_y: y position of horizon line.
     :param road_line_amount: amount of rode lines.
     :param road_line_frequency: fraction each road line gets toward the horizon line.
     :param road_color: color of road lines, specified in a list of 3 or 4 bytes in RGB or RGBA format.

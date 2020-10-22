@@ -122,7 +122,7 @@ class Able:
 
     def set_y_from_ratio(self, window):
         """
-        Sets this drawable's image_center_y-position depending on its ratio to the height of the window it's drawn on.
+        Sets this drawable's y-position depending on its ratio to the height of the window it's drawn on.
 
         :param window: Window this drawable is drawn on.
         """
@@ -264,7 +264,7 @@ def horizontal_line(start_x: float, end_x: float, y: float, color, line_width: f
 
     :param start_x: x position of line starting point.
     :param end_x: x position of line ending point.
-    :param y: image_center_y position of line starting and ending points.
+    :param y: y position of line starting and ending points.
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param line_width: Width of the line in pixels.
     """
@@ -277,7 +277,7 @@ def cl_horizontal_line(center_x: float, length: float, y: float, color, line_wid
 
     :param center_x: x position of line center point.
     :param length: length of line.
-    :param y: image_center_y position of line starting and ending points.
+    :param y: y position of line starting and ending points.
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param line_width: Width of the line in pixels.
     """
@@ -289,7 +289,7 @@ def cla_line(center_x: float, center_y: float, length: float, tilt_angle: float,
     Draw a line by specifying center point, length, and angle tilted counterclockwise from horizontal position.
 
     :param center_x: x position of line center point.
-    :param center_y: image_center_y position of line center point.
+    :param center_y: y position of line center point.
     :param length: length of line.
     :param tilt_angle: angle tilted counterclockwise from horizontal position.
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
@@ -307,7 +307,7 @@ def square_outline(center_x: float, center_y: float, side_length: float, color,
     Draw a square outline.
 
     :param center_x: x coordinate of square center.
-    :param center_y: image_center_y coordinate of square center.
+    :param center_y: y coordinate of square center.
     :param side_length: length of the square's sides.
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param border_width: width of the lines, in pixels.
@@ -321,7 +321,7 @@ def square_filled(center_x: float, center_y: float, side_length: float, color, t
     Draw a filled-in square.
 
     :param center_x: x coordinate of square center.
-    :param center_y: image_center_y coordinate of square center.
+    :param center_y: y coordinate of square center.
     :param side_length: length of the square's sides.
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param tilt_angle: rotation of the square. Defaults to zero.
@@ -336,7 +336,7 @@ def circle_arc_outline(center_x: float, center_y: float, radius: float, color, s
     Good for saving space by cutting out a parameter.
 
     :param center_x: x position that is the center of the arc.
-    :param center_y: image_center_y position that is the center of the arc.
+    :param center_y: y position that is the center of the arc.
     :param radius: radius of the arc.
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param start_angle: start angle of the arc in degrees.
@@ -358,7 +358,7 @@ def road_lines(center_x: float, starting_line, end_length: float, end_y: float, 
     :param center_x: x position of road center.
     :param starting_line: object used to make the first, bottom line.
     :param end_length: length road lines converge to.
-    :param end_y: image_center_y position road lines converge to.
+    :param end_y: y position road lines converge to.
     :param amount: amount of road lines.
     :param frequency: fraction each road line gets toward the horizon.
     :param end_width: Width the road lines converge to in pixels.
@@ -367,7 +367,7 @@ def road_lines(center_x: float, starting_line, end_length: float, end_y: float, 
         0 = same hue, 1/2 = -1/2 = opposite hue on the color wheel, etc.
     """
     # Making variables to prepare for drawing the road lines
-    y: float = starting_line.image_center_y
+    y: float = starting_line.y
     length: float = starting_line.size
     color = starting_line.color
     width: float = starting_line.line_width
@@ -404,12 +404,12 @@ def road(starting_road_line, road_side_lines, horizon_line,
         0 = same hue, 1/2 = -1/2 = opposite hue on the color wheel, etc.
     """
     # Drawing the road lines
-    road_lines(center_x, starting_road_line, 0, horizon_line.image_center_y, road_line_amount, road_line_frequency,
+    road_lines(center_x, starting_road_line, 0, horizon_line.y, road_line_amount, road_line_frequency,
                road_line_end_width, road_line_width_decrease_ratio, road_rainbowness)
 
     # Drawing the road-side lines
-    arcade.draw_line(0, 0, center_x, horizon_line.image_center_y, road_side_lines.color, road_side_lines.line_width)
-    arcade.draw_line(window_width, 0, center_x, horizon_line.image_center_y, road_side_lines.color, road_side_lines.line_width)
+    arcade.draw_line(0, 0, center_x, horizon_line.y, road_side_lines.color, road_side_lines.line_width)
+    arcade.draw_line(window_width, 0, center_x, horizon_line.y, road_side_lines.color, road_side_lines.line_width)
 
     # Drawing the horizon
-    horizontal_line(0, window_width, horizon_line.image_center_y, horizon_line.color, horizon_line.line_width)
+    horizontal_line(0, window_width, horizon_line.y, horizon_line.color, horizon_line.line_width)
