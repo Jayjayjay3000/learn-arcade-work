@@ -372,7 +372,7 @@ def main():
             print(get_drawing_card_line(hand_numbers[-1], hand_names[-1]))
 
         # Changing variable to prepare for the next prompt
-        print()
+        print(USE_WHICH_CARD_LINE)
         prompt_lines: list = get_prompt_lines(hand_names)
 
 

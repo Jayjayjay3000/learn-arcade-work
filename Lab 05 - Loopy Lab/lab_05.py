@@ -38,7 +38,7 @@ class Section(draw.Able):
         Creates class attributes.
 
         :param start_x: x position of the lower left corner of the section.
-        :param start_y: y position of the lower left corner of the section.
+        :param start_y: image_center_y position of the lower left corner of the section.
         :param pattern_id: number determining which pattern the section will use.
             0 = all white, 1 = white vertical stripes, 2 = white horizontal stripes, and 3 = white dots.
         :param quadrant_id: number determining which quadrant to have the ranges be in.
@@ -142,8 +142,8 @@ class Section(draw.Able):
                 # as well as the starting x position
                 current_x: int = column * 10 + self.x + 5
 
-                # Setting the y position of the square depending on the row the square is in,
-                # as well as the starting y position
+                # Setting the image_center_y position of the square depending on the row the square is in,
+                # as well as the starting image_center_y position
                 current_y: int = row * 10 + self.y + 5
 
                 # Setting the color of the square depending on the row and column the square is in,
