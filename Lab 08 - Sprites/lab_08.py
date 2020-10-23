@@ -19,6 +19,29 @@ class Window(draw.Window):
         arcade.draw_point(self.player.left, self.player.center_y, (255, 255, 255), 5)
         arcade.draw_point(self.player.right, self.player.center_y, (255, 255, 255), 5)
 
+    def update(self, delta_time: float):
+        self.player.update()
+
+    def on_key_press(self, key: int, modifiers: int):
+        if key == arcade.key.A:
+            self.player.change_x -= self.player.movement_speed
+        elif key == arcade.key.D:
+            self.player.change_x += self.player.movement_speed
+        elif key == arcade.key.W:
+            self.player.change_y += self.player.movement_speed
+        elif key == arcade.key.S:
+            self.player.change_y -= self.player.movement_speed
+
+    def on_key_release(self, key: int, modifiers: int):
+        if key == arcade.key.A:
+            self.player.change_x += self.player.movement_speed
+        elif key == arcade.key.D:
+            self.player.change_x -= self.player.movement_speed
+        elif key == arcade.key.W:
+            self.player.change_y -= self.player.movement_speed
+        elif key == arcade.key.S:
+            self.player.change_y += self.player.movement_speed
+
 
 class Player(arcade.Sprite):
     def __init__(self, filename=None, scale: float = 1,
@@ -34,6 +57,7 @@ class Player(arcade.Sprite):
         self.image_center_x: float = 0
         self.image_center_y_ratio: float = 0
         self.image_center_y: float = 0
+        self.movement_speed = None
 
     def set_image_x_offset_from_ratio(self):
         self.image_x_offset: float = self.image_x_offset_ratio * self.width
@@ -65,15 +89,20 @@ class Player(arcade.Sprite):
         self.set_center_x_from_offset()
         self.set_center_y_from_offset()
 
+    def update(self):
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
 
 # Defining main function
 def main():
     # Making class constants
     player_list = arcade.SpriteList()
-    player = Player("mouse_08.png", 1, 0, 1/4)
+    player = Player("mouse_08.png", 1/2, 0, 1/4)
     player_list.append(player)
     player.image_center_x_ratio = 1/2
     player.image_center_y_ratio = 1/2
+    player.movement_speed = 2
 
     # Making class constants for the window
     window = Window(512, 512, "Test", (64, 64, 64), player_list)
