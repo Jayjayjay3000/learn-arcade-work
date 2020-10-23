@@ -5,9 +5,6 @@ import draw_shapes_03 as draw
 import text_03 as text
 
 # Making general constants
-WINDOW_WIDTH: int = 512
-WINDOW_HEIGHT: int = 512
-BACKGROUND_COLOR = (0, 0, 0)
 MODE_0_TITLE: str = "Selecting Mode"
 MODE_1_TITLE: str = "Nitro Noir"
 MODE_2_TITLE: str = "Nitro Nimbus"
@@ -36,14 +33,14 @@ class Window(draw.Window):
     """
     Class for this lab's window.
     """
-    def __init__(self, title: str = "Default Mode"):
+    def __init__(self, width: int = 800, height: int = 600, title: str = "Default Mode", background_color=(0, 0, 0)):
         """
         Constructs the window and sets its background color.
 
         :param title: Title (appears in title bar)
         """
         # Making the window and setting its background color
-        super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, title, BACKGROUND_COLOR)
+        super().__init__(width, height, title, background_color)
 
         # Creating additional class attributes
         self.starting_road_line = None
@@ -159,22 +156,27 @@ def main():
     # --- Making window ---
 
     # Making class constants for the window
-    window: object = Window(mode_name)
+    window: object = Window(512, 512, mode_name, (0, 0, 0))
     window.starting_road_line = starting_road_line
+    window.starting_road_line.window = window
+    window.starting_road_line.set_y_from_ratio()
+    window.starting_road_line.set_size_from_ratio()
     window.road_line_hue_increment = road_line_hue_increment
     window.road_side_lines = road_side_lines
+    window.road_side_lines.window = window
     window.horizon_line = horizon_line
+    window.horizon_line.window = window
+    window.horizon_line.set_y_from_ratio()
     window.drawables = [moon, dim_star, star, bright_star]
-
-    # Making constants from window class constants
-    starting_road_line.set_y_from_ratio(window)
-    starting_road_line.set_size_from_ratio(window)
-    horizon_line.set_y_from_ratio(window)
-    moon.set_position_from_ratio(window)
-    moon.set_size_from_ratio(window, False)
-    dim_star.set_position_from_ratio(window)
-    star.set_position_from_ratio(window)
-    bright_star.set_position_from_ratio(window)
+    window.drawables[0].window = window
+    window.drawables[0].set_position_from_ratio()
+    window.drawables[0].set_size_from_ratio(False)
+    window.drawables[1].window = window
+    window.drawables[1].set_position_from_ratio()
+    window.drawables[2].window = window
+    window.drawables[2].set_position_from_ratio()
+    window.drawables[3].window = window
+    window.drawables[3].set_position_from_ratio()
 
     # --- Running until window closes ---
 

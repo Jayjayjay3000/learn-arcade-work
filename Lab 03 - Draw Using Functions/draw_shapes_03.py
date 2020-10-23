@@ -98,6 +98,7 @@ class Able:
         """
         Creates class attributes.
         """
+        self.window = None
         self.x_ratio = None
         self.x = None
         self.y_ratio = None
@@ -112,43 +113,36 @@ class Able:
         self.auto_draw_method_id = None
         self.auto_draw_parameter = None
 
-    def set_x_from_ratio(self, window):
+    def set_x_from_ratio(self):
         """
         Sets this drawable's x-position depending on its ratio to the width of the window it's drawn on.
-
-        :param window: Window this drawable is drawn on.
         """
-        self.x = self.x_ratio * window.width
+        self.x = self.x_ratio * self.window.width
 
-    def set_y_from_ratio(self, window):
+    def set_y_from_ratio(self):
         """
         Sets this drawable's y-position depending on its ratio to the height of the window it's drawn on.
-
-        :param window: Window this drawable is drawn on.
         """
-        self.y = self.y_ratio * window.height
+        self.y = self.y_ratio * self.window.height
 
-    def set_position_from_ratio(self, window):
+    def set_position_from_ratio(self):
         """
         Sets this drawable's position depending on its ratio to the width and height of the window it's drawn on.
-
-        :param window: Window this drawable is drawn on.
         """
-        self.set_x_from_ratio(window)
-        self.set_y_from_ratio(window)
+        self.set_x_from_ratio()
+        self.set_y_from_ratio()
 
-    def set_size_from_ratio(self, window, use_width: bool = True):
+    def set_size_from_ratio(self, use_width: bool = True):
         """
         Sets this drawable's size depending on its ratio to the width or height of the window it's drawn on.
 
-        :param window: Window this drawable is drawn on.
         :param use_width: Whether to use the width or height of the window this is drawn on.
             Width if true, height if false.
         """
         if use_width:
-            self.size = self.size_ratio * window.width
+            self.size = self.size_ratio * self.window.width
         else:
-            self.size = self.size_ratio * window.height
+            self.size = self.size_ratio * self.window.height
 
     def call_auto_draw(self):
         """
