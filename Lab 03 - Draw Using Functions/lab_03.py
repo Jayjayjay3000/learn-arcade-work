@@ -134,7 +134,7 @@ def main():
     text.print_lines(ASK_MODE_LINES)
     response: str = input(text.INPUT_LINE)
 
-    # Setting the mode to what they said and setting other variables respectively
+    # Setting the mode to what they requested and setting other variables respectively
     if response.lower() == "a":
         mode_name: str = MODE_1_TITLE
         road_line_hue_increment = 0
