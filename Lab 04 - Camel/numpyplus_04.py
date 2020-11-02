@@ -1,11 +1,23 @@
+# Importing libraries
+import numpy as np
+
+
 # Defining functions
 def is_prime(number: int):
-    if number >= 2:
-        for divisor in range(2, number):
-            if not (number % divisor):
+    """
+    Determines whether a number is prime or not.
+
+    :param number: number you want to know whether it is prime or not.
+    :return: whether or not the number is prime. Returns None if the number is less than 2.
+    """
+    if number > 2:
+        for divisor in range(3, int(np.sqrt(number)) + 1, 2):
+            if (number % divisor) == 0:
                 return False
+    elif number == 2:
+        return True
     else:
-        return False
+        return None
     return True
 
 
