@@ -52,9 +52,6 @@ class Section(draw.Able):
         self.pattern_id: int = pattern_id
         self.quadrant_id: int = quadrant_id
         self.use_center_line: bool = use_center_line
-        self.method_names: list = ["get_use_white", "get_quadrant_range", "draw"]
-        self.method_parameter_amounts: list = [2, 1, 0]
-        self.auto_draw_method_id = 2
 
     def get_use_white(self, row: int, column: int):
         """
@@ -156,11 +153,9 @@ class Section(draw.Able):
                 # Drawing the square
                 draw.square_filled(current_x, current_y, 5, color)
 
-    def auto_draw(self, parameter=None):
+    def on_draw(self):
         """
-        This object's auto draw method. Calls the draw method.
-
-        :param parameter: Parameter for the auto draw function. Is unused.
+        This drawable's on draw method.
         """
         self.draw()
 

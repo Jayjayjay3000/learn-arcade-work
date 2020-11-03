@@ -67,6 +67,40 @@ class Window(draw.Window):
                   0, ROAD_LINE_WIDTH_DECREASE_RATIO, self.road_line_hue_increment)
 
 
+class Star(draw.Star):
+    """
+    Class for this lab's drawable stars.
+    """
+    def __init__(self):
+        """
+        Creates class attributes.
+        """
+        super().__init__()
+
+    def on_draw(self):
+        """
+        This drawable's on draw method.
+        """
+        self.draw()
+
+
+class Moon(draw.Moon):
+    """
+    Class for this lab's drawable moon.
+    """
+    def __init__(self):
+        """
+        Creates class attributes.
+        """
+        super().__init__()
+
+    def on_draw(self):
+        """
+        This drawable's on draw method.
+        """
+        self.draw_outline()
+
+
 # Defining main function
 def main():
     """
@@ -84,36 +118,31 @@ def main():
     horizon_line.y_ratio = 1/2
 
     # Making class constants for the sky
-    moon = draw.Moon()
+    moon = Moon()
     moon.x_ratio = 4/5
     moon.y_ratio = 7/8
     moon.size_ratio = 1/16
     moon.line_width = 2
     moon.tilt_angle = 16
     moon.phase_ratio = 3/5
-    moon.auto_draw_method_id = 0
-    moon.auto_draw_parameter = 1024
-    dim_star = draw.Star()
+    dim_star = Star()
     dim_star.x_ratio = 1/7
     dim_star.y_ratio = 8/9
     dim_star.size = 6
     dim_star.line_width = 1/2
     dim_star.line_amount = 3
-    dim_star.auto_draw_method_id = 0
-    star = draw.Star()
+    star = Star()
     star.x_ratio = 3/4
     star.y_ratio = 3/5
     star.size = 7
     star.line_width = 1
     star.line_amount = 3
-    star.auto_draw_method_id = 0
-    bright_star = draw.Star()
+    bright_star = Star()
     bright_star.x_ratio = 1/3
     bright_star.y_ratio = 3/4
     bright_star.size = 8
     bright_star.line_width = 1
     bright_star.line_amount = 4
-    bright_star.auto_draw_method_id = 0
 
     # Making class constants from other constants
     starting_road_line.size_ratio = 1 - (starting_road_line.y_ratio / horizon_line.y_ratio)
@@ -171,15 +200,12 @@ def main():
     window.horizon_line.window = window
     window.horizon_line.set_y_from_ratio()
     window.drawables = [moon, dim_star, star, bright_star]
-    window.drawables[0].window = window
-    window.drawables[0].set_position_from_ratio()
-    window.drawables[0].set_size_from_ratio(False)
-    window.drawables[1].window = window
-    window.drawables[1].set_position_from_ratio()
-    window.drawables[2].window = window
-    window.drawables[2].set_position_from_ratio()
-    window.drawables[3].window = window
-    window.drawables[3].set_position_from_ratio()
+    for current_drawable in window.drawables:
+        # Making class constants for each of the window's drawables
+        current_drawable.window = window
+        current_drawable.set_position_from_ratio()
+        if current_drawable == moon:
+            current_drawable.set_size_from_ratio(False)
 
     # --- Running until window closes ---
 

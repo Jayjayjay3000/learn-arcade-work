@@ -17,9 +17,9 @@ class Window(draw.Window):
         # Creating class attributes from other attributes
         super().__init__(self.amount_of_tile_columns * self.tile_size, self.amount_of_tile_rows * self.tile_size,
                          title, background_color)
-        self.grid = [[0] * self.amount_of_tile_columns] * self.amount_of_tile_rows
+        self.grid = [[0 for _ in range(self.amount_of_tile_columns)] for _ in range(self.amount_of_tile_rows)]
 
-        self.grid[1][5] = 1
+        self.grid[1][1] = 1
 
     def on_draw(self):
         super().on_draw()
@@ -29,6 +29,10 @@ class Window(draw.Window):
         for current_line_number in range(1, self.amount_of_tile_rows):
             draw.horizontal_line(0, self.width, current_line_number * self.tile_size,
                                  self.margin_color, self.margin_width)
+        for current_column_number in range(self.amount_of_tile_columns):
+            for current_row_number in range(self.amount_of_tile_rows):
+                draw.square_outline((current_column_number + 1/2) * self.tile_size, (current_row_number + 1/2) * self.tile_size,
+                                    self.tile_size / 3, (255, 255, 255), 1, 45)
 
     def on_update(self, delta_time: float):
         pass
