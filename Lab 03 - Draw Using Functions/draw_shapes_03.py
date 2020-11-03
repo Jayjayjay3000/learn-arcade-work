@@ -278,6 +278,19 @@ def cl_horizontal_line(center_x: float, length: float, y: float, color, line_wid
     arcade.draw_line(center_x - length / 2, y, center_x + length / 2, y, color, line_width)
 
 
+def vertical_line(x: float, start_y: float, end_y: float, color, line_width: float = 1):
+    """
+    Draw a horizontal line. Good for saving space by cutting out a parameter.
+
+    :param x: x position of line starting and ending points.
+    :param start_y: x position of line starting point.
+    :param end_y: y position of line ending point.
+    :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
+    :param line_width: Width of the line in pixels.
+    """
+    arcade.draw_line(x, start_y, x, end_y, color, line_width)
+
+
 def cla_line(center_x: float, center_y: float, length: float, tilt_angle: float, color, line_width: float = 1):
     """
     Draw a line by specifying center point, length, and angle tilted counterclockwise from horizontal position.

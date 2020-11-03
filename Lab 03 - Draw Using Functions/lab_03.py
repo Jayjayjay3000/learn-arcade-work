@@ -37,7 +37,10 @@ class Window(draw.Window):
         """
         Constructs the window and sets its background color.
 
+        :param width: Window width
+        :param height: Window height
         :param title: Title (appears in title bar)
+        :param background_color: List of 3 or 4 bytes in RGB/RGBA format.
         """
         # Making the window and setting its background color
         super().__init__(width, height, title, background_color)
@@ -52,10 +55,10 @@ class Window(draw.Window):
         """
         The window's on draw method.
         """
-        # Starting to render the window.
+        # Starting to render the window
         super().on_draw()
 
-        # Drawing the objects in the drawables list.
+        # Drawing the objects in the drawables list
         self.draw_drawables()
 
         # Drawing the road

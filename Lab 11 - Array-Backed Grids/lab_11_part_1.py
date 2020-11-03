@@ -6,15 +6,29 @@ import draw_shapes_11 as draw
 # Defining classes
 class Window(draw.Window):
     def __init__(self, tile_size: int, amount_of_tile_columns: int, amount_of_tile_rows: int,
-                 title: str, background_color):
-        self.tile_size = tile_size
-        self.amount_of_tile_columns = amount_of_tile_columns
-        self.amount_of_tile_rows = amount_of_tile_rows
+                 title: str, background_color, margin_color, margin_width: float = 1):
+        # Creating class attributes
+        self.tile_size: int = tile_size
+        self.amount_of_tile_columns: int = amount_of_tile_columns
+        self.amount_of_tile_rows: int = amount_of_tile_rows
+        self.margin_color = margin_color
+        self.margin_width: float = margin_width
+
+        # Creating class attributes from other attributes
         super().__init__(self.amount_of_tile_columns * self.tile_size, self.amount_of_tile_rows * self.tile_size,
                          title, background_color)
+        self.grid = [[0] * self.amount_of_tile_columns] * self.amount_of_tile_rows
+
+        self.grid[1][5] = 1
 
     def on_draw(self):
         super().on_draw()
+        for current_line_number in range(1, self.amount_of_tile_columns):
+            draw.vertical_line(current_line_number * self.tile_size, 0, self.height,
+                               self.margin_color, self.margin_width)
+        for current_line_number in range(1, self.amount_of_tile_rows):
+            draw.horizontal_line(0, self.width, current_line_number * self.tile_size,
+                                 self.margin_color, self.margin_width)
 
     def on_update(self, delta_time: float):
         pass
@@ -25,8 +39,9 @@ class Window(draw.Window):
 
 # Running main function
 def main():
-    window = Window(64, 8, 8, "Test", (0, 0, 0))
+    window = Window(48, 8, 8, "Test", (0, 0, 0), (128, 128, 128), 2)
     arcade.run()
+    print(window.grid)
 
 
 # Running main function
