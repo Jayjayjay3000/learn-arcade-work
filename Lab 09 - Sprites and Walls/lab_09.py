@@ -132,24 +132,17 @@ class Sprite(arcade.Sprite):
         # Creating class attributes
         super().__init__(filename, scale)
         self.window = None
-        self.image_x_offset_ratio: float = image_x_offset_ratio
-        self.image_x_offset: float = 0
-        self.image_y_offset_ratio: float = image_y_offset_ratio
-        self.image_y_offset: float = 0
         self.image_center_x_ratio: float = 0
         self.image_center_x: float = 0
+        self.image_x_offset_ratio: float = image_x_offset_ratio
+        self.image_x_offset: float = 0
         self.image_center_y_ratio: float = 0
         self.image_center_y: float = 0
+        self.image_y_offset_ratio: float = image_y_offset_ratio
+        self.image_y_offset: float = 0
 
         # Creating class attributes from other attributes
         self.set_image_position_offset_from_ratio()
-
-    def set_image_position_offset_from_ratio(self):
-        """
-        Sets the sprite's image center offset depending on its ratio to its width and height.
-        """
-        self.image_x_offset: float = self.image_x_offset_ratio * self.width
-        self.image_y_offset: float = self.image_y_offset_ratio * self.height
 
     def set_image_center_position_from_ratio(self):
         """
@@ -158,6 +151,13 @@ class Sprite(arcade.Sprite):
         """
         self.image_center_x: float = self.image_center_x_ratio * self.window.width
         self.image_center_y: float = self.image_center_y_ratio * self.window.height
+
+    def set_image_position_offset_from_ratio(self):
+        """
+        Sets the sprite's image center offset depending on its ratio to its width and height.
+        """
+        self.image_x_offset: float = self.image_x_offset_ratio * self.width
+        self.image_y_offset: float = self.image_y_offset_ratio * self.height
 
     def set_center_position_from_offset(self):
         """
