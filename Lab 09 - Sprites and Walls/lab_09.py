@@ -1,10 +1,10 @@
 # Importing libraries
 import arcade
-import draw_shapes_09 as draw
+import window_09 as window
 
 
 # Defining classes
-class Window(draw.Window):
+class Window(window.W):
     """
     Class for this lab's window.
     """
@@ -220,27 +220,27 @@ def main():
     wall_list.append(central_wall)
 
     # Making class constants for the window
-    window = Window(512, 512, "Test", (64, 64, 64), player_list, wall_list)
-    window.player.window = window
-    window.player.set_image_center_position_from_ratio()
-    window.player.set_center_position_from_offset()
+    lab_window = Window(512, 512, "Test", (64, 64, 64), player_list, wall_list)
+    lab_window.player.window = lab_window
+    lab_window.player.set_image_center_position_from_ratio()
+    lab_window.player.set_center_position_from_offset()
     for current_wall_row in range(2):
         # Creating a row of walls and appending each wall to the wall list
-        for current_wall_x in range(0, window.width + 1, int(central_wall.width)):
+        for current_wall_x in range(0, lab_window.width + 1, int(central_wall.width)):
             current_wall = Wall("side_wall_09.png", 1/2)
             current_wall.image_center_x = current_wall_x
-            current_wall.image_center_y = current_wall_row * window.height
-            window.wall_list.append(current_wall)
+            current_wall.image_center_y = current_wall_row * lab_window.height
+            lab_window.wall_list.append(current_wall)
     for current_wall_column in range(2):
         # Creating a column of walls and appending each wall to the wall list
-        for current_wall_y in range(1, window.height, int(central_wall.width)):
+        for current_wall_y in range(1, lab_window.height, int(central_wall.width)):
             current_wall = Wall("side_wall_09.png", 1/2)
-            current_wall.image_center_x = current_wall_column * window.width
+            current_wall.image_center_x = current_wall_column * lab_window.width
             current_wall.image_center_y = current_wall_y
-            window.wall_list.append(current_wall)
-    for current_wall in window.wall_list:
+            lab_window.wall_list.append(current_wall)
+    for current_wall in lab_window.wall_list:
         # Making class constants for each of the walls in the wall list
-        current_wall.window = window
+        current_wall.window = lab_window
         if current_wall == central_wall:
             current_wall.set_image_center_position_from_ratio()
         current_wall.set_center_position_from_offset()

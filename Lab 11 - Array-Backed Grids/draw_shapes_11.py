@@ -1,13 +1,14 @@
 # Importing libraries
-import arcade
 import numpy as np
+import arcade
 import colorsysplus
+import window_11 as window
 
 
 # Defining classes
-class Window(arcade.Window):
+class Window(window.W):
     """
-    Class for windows.
+    Class for windows you can draw on.
     """
     def __init__(self, width: int = 800, height: int = 600, title: str = "Arcade Window", background_color=(0, 0, 0),
                  fullscreen: bool = False, resizable: bool = False, update_rate=1/60, antialiasing: bool = True):
@@ -23,15 +24,11 @@ class Window(arcade.Window):
         :param update_rate: How frequently to update the window.
         :param antialiasing: Should OpenGL's anti-aliasing be enabled?
         """
-        # Making the new window
-        super().__init__(width, height, title, fullscreen, resizable, update_rate, antialiasing)
+        # Making the new window and setting its background color
+        super().__init__(width, height, title, background_color, fullscreen, resizable, update_rate, antialiasing)
 
-        # Setting additional class attributes
-        self.color = background_color
+        # Creating additional class attributes
         self.drawables: list = []
-
-        # Setting the window's background color
-        arcade.set_background_color(self.color)
 
     def draw_drawables(self):
         """
@@ -46,13 +43,6 @@ class Window(arcade.Window):
         >> Remember to ask Craven on how to draw something only once using the window class <<
         """
         pass
-
-    def on_draw(self):
-        """
-        Renders the window.
-        """
-        # Starting to render the window
-        arcade.start_render()
 
 
 class Able:

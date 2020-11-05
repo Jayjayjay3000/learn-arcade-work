@@ -1,6 +1,6 @@
 # Importing libraries
 import arcade
-import draw_shapes_07 as draw
+import window_07 as window
 
 # Making constants
 WINDOW_WIDTH: int = 512
@@ -12,7 +12,7 @@ BACKGROUND_COLOR = (64, 64, 64)
 # Defining main function
 def main():
     # Making class constants
-    window = draw.Window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TEXT, BACKGROUND_COLOR)
+    lab_window = window.W(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TEXT, BACKGROUND_COLOR)
 
     arcade.run()
 

@@ -1,9 +1,9 @@
 # Importing libraries
 import arcade
-import draw_shapes_08 as draw
+import window_08 as window
 
 
-class Window(draw.Window):
+class Window(window.W):
     def __init__(self, width, height, title, background_color, player_list):
         super().__init__(width, height, title, background_color)
         self.player_list = player_list
@@ -105,10 +105,10 @@ def main():
     player.movement_speed = 2
 
     # Making class constants for the window
-    window = Window(512, 512, "Test", (64, 64, 64), player_list)
-    window.player.window = window
-    window.player.set_image_center_position_from_ratio()
-    window.player.set_center_position_from_offset()
+    lab_window = Window(512, 512, "Test", (64, 64, 64), player_list)
+    lab_window.player.window = lab_window
+    lab_window.player.set_image_center_position_from_ratio()
+    lab_window.player.set_center_position_from_offset()
 
     arcade.run()
 
