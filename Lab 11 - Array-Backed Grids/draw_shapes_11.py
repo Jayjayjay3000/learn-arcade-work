@@ -38,6 +38,12 @@ class Window(window.W):
         for current_drawable in self.drawables:
             current_drawable.on_draw()
 
+    def update_drawables(self):
+        """
+        Updates the drawables list.
+        """
+        pass
+
     def on_initial_draw(self):
         """
         >> Remember to ask Craven on how to draw something only once using the window class <<

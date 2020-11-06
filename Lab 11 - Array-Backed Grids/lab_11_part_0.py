@@ -1,24 +1,21 @@
 # Importing libraries
 import arcade
 import draw_shapes_11 as draw
+import grid_window_11 as grid
+import draw_on_grid_11 as grid_draw
 
 
 # Defining classes
-class Window(draw.Window):
+class Window(grid_draw.Window):
+    NOT_A_TILE_ID_LINE: str = "Error: This tile has an incompatible tile id"
+
     def __init__(self, tile_size: int, amount_of_tile_columns: int, amount_of_tile_rows: int,
                  title: str, background_color, margins):
-        # Creating class attributes
-        self.tile_size: int = tile_size
-        self.amount_of_tile_columns: int = amount_of_tile_columns
-        self.amount_of_tile_rows: int = amount_of_tile_rows
-        self.margins = margins
+        # Making the new window and setting its background color
+        super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color, margins)
 
-        # Creating class attributes from other attributes
-        super().__init__(self.amount_of_tile_columns * self.tile_size, self.amount_of_tile_rows * self.tile_size,
-                         title, background_color)
+        # Creating additional class attributes
         self.selected_tiles = [[0 for _ in range(self.amount_of_tile_columns)] for _ in range(self.amount_of_tile_rows)]
-
-        self.selected_tiles[1][1] = 1
 
     def on_draw(self):
         # Starting to render the window
@@ -27,21 +24,27 @@ class Window(draw.Window):
         # Drawing the objects in the drawables list
         self.draw_drawables()
 
-    def on_update(self, delta_time: float):
-        pass
-
-    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        if button == arcade.MOUSE_BUTTON_LEFT:
-            if self.selected_tiles[(y - 1) // self.tile_size][x // self.tile_size] == 0:
-                self.selected_tiles[(y - 1) // self.tile_size][x // self.tile_size] = 1
-            elif self.selected_tiles[(y - 1) // self.tile_size][x // self.tile_size] == 1:
-                self.selected_tiles[(y - 1) // self.tile_size][x // self.tile_size] = 0
-            else:
-                print("error")
-                exit()
+    def on_mouse_press(self, mouse_x: int, mouse_y: int, mouse_button: int, modifiers: int):
+        if mouse_button == arcade.MOUSE_BUTTON_LEFT:
+            mouse_tile_x = mouse_x // self.tile_size
+            mouse_tile_y = (mouse_y - 1) // self.tile_size
+            self.change_tile(mouse_tile_x, mouse_tile_y)
             self.update_drawables()
 
+    def change_tile(self, tile_x, tile_y):
+        if 0 <= tile_x < self.amount_of_tile_columns and 0 <= tile_y < self.amount_of_tile_rows:
+            if self.selected_tiles[tile_y][tile_x] == 0:
+                self.selected_tiles[tile_y][tile_x] = 1
+            elif self.selected_tiles[tile_y][tile_x] == 1:
+                self.selected_tiles[tile_y][tile_x] = 0
+            else:
+                print(self.NOT_A_TILE_ID_LINE)
+                exit()
+
     def update_drawables(self):
+        """
+        Updates the drawables list.
+        """
         cell_selection_list: list = []
         for current_row in range(self.amount_of_tile_rows):
             for current_column in range(self.amount_of_tile_columns):
@@ -58,40 +61,14 @@ class Window(draw.Window):
                 current_drawable.set_size_from_tile_ratio()
 
 
-class Drawable(draw.Able):
-    def __init__(self):
-        super().__init__()
-        self.tile_x = None
-        self.tile_x_offset_ratio = None
-        self.tile_y = None
-        self.tile_y_offset_ratio = None
-        self.size_tile_ratio = None
-
-    def set_x_from_tile_and_offset(self):
-        self.x: float = (self.tile_x + self.tile_x_offset_ratio) * self.window.tile_size
-
-    def set_y_from_tile_and_offset(self):
-        self.y: float = (self.tile_y + self.tile_y_offset_ratio) * self.window.tile_size
-
-    def set_position_from_tile_and_offset(self):
-        self.set_x_from_tile_and_offset()
-        self.set_y_from_tile_and_offset()
-
-    def set_size_from_tile_ratio(self):
-        self.size: float = self.size_tile_ratio * self.window.tile_size
-
-
-class Margins(draw.Able):
+class Drawable(grid_draw.Able):
     def __init__(self):
         super().__init__()
 
-    def draw(self):
-        for current_line_number in range(1, self.window.amount_of_tile_columns):
-            draw.vertical_line(current_line_number * self.window.tile_size, 0, self.window.height,
-                               self.color, self.line_width)
-        for current_line_number in range(1, self.window.amount_of_tile_rows):
-            draw.horizontal_line(0, self.window.width, current_line_number * self.window.tile_size,
-                                 self.color, self.line_width)
+
+class Margins(grid.Margins):
+    def __init__(self):
+        super().__init__()
 
     def on_draw(self):
         self.draw()
@@ -134,7 +111,6 @@ def main():
 
     # Running the program until the window closes
     arcade.run()
-    print(window.selected_tiles)
 
 
 # Running main function
