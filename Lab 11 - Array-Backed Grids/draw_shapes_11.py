@@ -1,11 +1,11 @@
 # Importing libraries
 import numpy as np
 import arcade
-import window_11 as window
+import window_11 as w
 
 
 # Defining classes
-class Window(window.W):
+class Window(w.Window):
     """
     Class for windows you can draw on.
     """

@@ -10,9 +10,9 @@ class Window(grid_draw.Window):
     NOT_A_TILE_ID_LINE: str = "Error: This tile has an incompatible tile id"
 
     def __init__(self, tile_size: int, amount_of_tile_columns: int, amount_of_tile_rows: int,
-                 title: str, background_color, margins):
+                 title: str, background_color):
         # Making the new window and setting its background color
-        super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color, margins)
+        super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color)
 
         # Creating additional class attributes
         self.selected_tiles = [[0 for _ in range(self.amount_of_tile_columns)] for _ in range(self.amount_of_tile_rows)]
@@ -106,7 +106,8 @@ def main():
     margins.line_width = 2
 
     # Making class constants for the window
-    window = Window(48, 8, 8, "Test", (0, 0, 0), margins)
+    window = Window(48, 8, 8, "Test", (0, 0, 0))
+    window.margins = margins
     window.update_drawables()
 
     # Running the program until the window closes

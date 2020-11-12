@@ -7,8 +7,8 @@ import lab_11_part_0 as part_0
 # Defining classes
 class Window(part_0.Window):
     def __init__(self, tile_size: int, amount_of_tile_columns: int, amount_of_tile_rows: int,
-                 title: str, background_color, margins):
-        super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color, margins)
+                 title: str, background_color):
+        super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color)
 
     def on_mouse_press(self, mouse_x: int, mouse_y: int, mouse_button: int, modifiers: int):
         super().on_mouse_press(mouse_x, mouse_y, mouse_button, modifiers)
@@ -48,7 +48,8 @@ def main():
     margins.line_width = 2
 
     # Making class constants for the window
-    window = Window(48, 8, 8, "Test", (0, 0, 0), margins)
+    window = Window(48, 8, 8, "Test", (0, 0, 0))
+    window.margins = margins
     window.update_drawables()
 
     # Running the program until the window closes
