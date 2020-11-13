@@ -27,7 +27,7 @@ class Window(part_0.Window):
                 else:
                     print(f"Row {current_row_number} has {selected_tile_amount} cells selected.")
                     if selected_tile_amount > 1:
-                        continuous_block_lengths = npp.get_streaks_in_list(current_row, 1)
+                        continuous_block_lengths = npp.get_streaks_in_list(current_row, 1, 3)
                         for current_continuous_block_length in continuous_block_lengths:
                             print(f"There are {current_continuous_block_length} continuous blocks selected "
                                   f"on row {current_row_number}.")

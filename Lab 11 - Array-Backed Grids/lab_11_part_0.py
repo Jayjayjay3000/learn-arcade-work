@@ -7,6 +7,9 @@ import draw_on_grid_11 as grid_draw
 
 # Defining classes
 class Window(grid_draw.Window):
+    """
+    Class for this lab's window.
+    """
     NOT_A_TILE_ID_LINE: str = "Error: This tile has an incompatible tile id"
 
     def __init__(self, tile_size: int, amount_of_tile_columns: int, amount_of_tile_rows: int,
@@ -18,6 +21,9 @@ class Window(grid_draw.Window):
         self.selected_tiles = [[0 for _ in range(self.amount_of_tile_columns)] for _ in range(self.amount_of_tile_rows)]
 
     def on_draw(self):
+        """
+
+        """
         # Starting to render the window
         super().on_draw()
 

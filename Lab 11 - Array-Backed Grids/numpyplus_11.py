@@ -93,25 +93,46 @@ def get_lateral_sub_list(meta_list: list, common_index_number: int):
     Makes a list that contains every element of a specified index number in a list of lists.
 
     :param meta_list: list of lists you want to make a lateral sub-list of.
-    :param common_index_number: common index number every element of the 
-    :return
+    :param common_index_number: common index number every element of the lateral sub-list is from.
+    :return: lateral sub-list of the list of lists.
     """
+    # Making lateral sub-list variable
     lateral_sub_list = []
+
+    # Putting elements in the lateral sub-list
     for sub_list in meta_list:
+        # Putting an element in the lateral sub-list
         lateral_sub_list.append(sub_list[common_index_number])
+
+    # Returning the lateral sub-list
     return lateral_sub_list
 
 
-def get_streaks_in_list(list_to_get_streaks: list, streak_item, streak_minimum: int = 3):
+def get_streaks_in_list(list_to_get_streaks: list, streak_item, streak_minimum: int = 1):
+    """
+    Makes a list containing streak lengths of a specific item in a list.
+
+    :param list_to_get_streaks: list you want to make a list containing item streak lengths of.
+    :param streak_item: specific item you want to find streaks of.
+    :param streak_minimum: minimum length a streak can be.
+    :return: list containing streak lengths of a specific item in a list.
+    """
+    # Making variables to prepare for
     streak_length = 0
     streak_lengths_list = []
-    for element in list_to_get_streaks:
+
+    # Calculating streak lengths and appending them to the streak length list
+    for element in list_to_get_streaks + [None]:
+        # Checking if the element is a part of a streak
         if element == streak_item:
             streak_length += 1
         else:
+            # Appending the streak length to the streak length list if it's at least the minimum length
             if streak_length >= streak_minimum:
                 streak_lengths_list.append(streak_length)
+
+            # Resetting the streak length to 0
             streak_length = 0
-    if streak_length >= streak_minimum:
-        streak_lengths_list.append(streak_length)
+
+    # Returning the streak length list
     return streak_lengths_list
