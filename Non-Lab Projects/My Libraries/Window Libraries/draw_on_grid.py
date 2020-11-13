@@ -1,6 +1,6 @@
 # Importing libraries
 import grid_window as grid
-import draw_shapeU as draw
+import draw_shapes as draw
 
 
 # Defining classes
