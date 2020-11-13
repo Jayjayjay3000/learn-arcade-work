@@ -2,11 +2,11 @@
 import numpy as np
 import arcade
 import colorsysplus
-import window
+import window as w
 
 
 # Defining classes
-class Window(window.W):
+class Window(w.Window):
     """
     Class for windows you can draw on.
     """
@@ -37,6 +37,12 @@ class Window(window.W):
         # Looping through all objects in drawables and drawing them
         for current_drawable in self.drawables:
             current_drawable.on_draw()
+
+    def update_drawables(self):
+        """
+        Updates the drawables list.
+        """
+        pass
 
     def on_initial_draw(self):
         """
