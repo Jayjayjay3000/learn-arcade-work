@@ -3,7 +3,7 @@ import arcade
 
 
 # Defining classes
-class W(arcade.Window):
+class Window(arcade.Window):
     """
     Class for windows.
     """

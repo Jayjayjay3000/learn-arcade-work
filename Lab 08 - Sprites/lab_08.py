@@ -1,9 +1,9 @@
 # Importing libraries
 import arcade
-import window_08 as window
+import window_08 as w
 
 
-class Window(window.W):
+class Window(w.Window):
     def __init__(self, width, height, title, background_color, player_list):
         super().__init__(width, height, title, background_color)
         self.player_list = player_list

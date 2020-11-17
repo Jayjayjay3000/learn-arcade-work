@@ -1,10 +1,10 @@
 # Importing libraries
 import arcade
-import window_09 as window
+import window_09 as w
 
 
 # Defining classes
-class Window(window.W):
+class Window(w.Window):
     """
     Class for this lab's window.
     """

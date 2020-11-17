@@ -1,3 +1,8 @@
+"""
+Line A: This line of code is rewritten from https://stackoverflow.com/questions/14939953/sum-the-digits-of-a-number,
+    in the third example of the first answer in the page.
+"""
+
 # Importing libraries
 import numpy as np
 
@@ -44,7 +49,7 @@ def sum_digits(number: int, base: int = 10):
     # Summing the number's digits
     while number:
         # Adding a digit to the digit sum
-        digit_sum, number = digit_sum + number % base, number // base
+        digit_sum, number = digit_sum + number % base, number // base  # *** A ***
 
     # Returning the digit sum
     return digit_sum
