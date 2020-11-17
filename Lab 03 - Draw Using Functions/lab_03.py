@@ -1,7 +1,7 @@
 # Importing libraries
 from arcade import run
 from numpy import pi
-import draw_shapes_03 as draw
+import draw_objects_03 as draw
 import text_03 as text
 
 # Making general constants
