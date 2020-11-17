@@ -1,5 +1,6 @@
 # Importing libraries
 import arcade
+import draw_shapes_11 as draw
 import grid_window_12 as grid
 import draw_on_grid_12 as grid_draw
 
@@ -46,6 +47,30 @@ class Drawable(grid_draw.Able):
 class Margins(grid.Margins):
     def __init__(self):
         super().__init__()
+
+    def on_draw(self):
+        self.draw()
+
+
+class Player(Drawable):
+    TILE_X_OFFSET_RATIO = 1/2
+    TILE_Y_OFFSET_RATIO = 1/2
+    SIZE_TILE_RATIO = 1/3
+    COLOR = (255, 255, 255)
+    LINE_WIDTH = 1
+    TILT_ANGLE = 45
+
+    def __init__(self):
+        super().__init__()
+        self.tile_x_offset_ratio = self.TILE_X_OFFSET_RATIO
+        self.tile_y_offset_ratio = self.TILE_Y_OFFSET_RATIO
+        self.size_tile_ratio = self.SIZE_TILE_RATIO
+        self.color = self.COLOR
+        self.line_width = self.LINE_WIDTH
+        self.tilt_angle = self.TILT_ANGLE
+
+    def draw(self):
+        draw.square_outline(self.x, self.y, self.size, self.color, self.line_width, self.tilt_angle)
 
     def on_draw(self):
         self.draw()
