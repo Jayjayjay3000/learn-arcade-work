@@ -8,7 +8,7 @@ Line B: This line of code is rewritten from https://www.geeksforgeeks.org/python
 """
 
 # Importing libraries
-import colorsys
+from colorsys import *
 
 
 def increment_hue(color, increment: float):
@@ -23,13 +23,13 @@ def increment_hue(color, increment: float):
     color = tuple(x / 255 for x in color)  # *** A ***
 
     # Converting from RGB to HLS color
-    color = colorsys.rgb_to_hls(color[0], color[1], color[2])
+    color = rgb_to_hls(color[0], color[1], color[2])
 
     # Incrementing the color's hue
     color = tuple(map(sum, zip(color, (increment, 0, 0))))  # *** B ***
 
     # Converting from HLS to RGB color
-    color = colorsys.hls_to_rgb(color[0], color[1], color[2])
+    color = hls_to_rgb(color[0], color[1], color[2])
 
     # Converting from 0 ~ 1 range to 0 ~ 255 range
     color = tuple(x * 255 for x in color)  # *** A ***

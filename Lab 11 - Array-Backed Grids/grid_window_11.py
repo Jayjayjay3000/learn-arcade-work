@@ -1,10 +1,10 @@
 # Importing libraries
-import window_11 as w
+from window_11 import *
 import draw_shapes_11 as draw
 
 
 # Defining classes
-class Window(w.Window):
+class Window(Window):
     """
     Class for windows with grids.
     """

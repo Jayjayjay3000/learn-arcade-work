@@ -1,12 +1,12 @@
 # Importing libraries
-import arcade
-import draw_shapes_11 as draw
+from arcade import MOUSE_BUTTON_LEFT
+from arcade import run
 import grid_window_11 as grid
-import draw_on_grid_11 as grid_draw
+import draw_on_grid_11 as draw
 
 
 # Defining classes
-class Window(grid_draw.Window):
+class Window(draw.Window):
     """
     Class for this lab's window.
     """
@@ -16,6 +16,7 @@ class Window(grid_draw.Window):
                  title: str, background_color):
         # Making the new window and setting its background color
         super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color)
+        self.drawables = self.drawables
 
         # Creating additional class attributes
         self.selected_tiles = [[0 for _ in range(self.amount_of_tile_columns)] for _ in range(self.amount_of_tile_rows)]
@@ -31,7 +32,7 @@ class Window(grid_draw.Window):
         self.draw_drawables()
 
     def on_mouse_press(self, mouse_x: int, mouse_y: int, mouse_button: int, modifiers: int):
-        if mouse_button == arcade.MOUSE_BUTTON_LEFT:
+        if mouse_button == MOUSE_BUTTON_LEFT:
             mouse_tile_x = mouse_x // self.tile_size
             mouse_tile_y = (mouse_y - 1) // self.tile_size
             self.change_tile(mouse_tile_x, mouse_tile_y)
@@ -67,7 +68,7 @@ class Window(grid_draw.Window):
                 current_drawable.set_size_from_tile_ratio()
 
 
-class Drawable(grid_draw.Able):
+class Drawable(draw.Able):
     def __init__(self):
         super().__init__()
 
@@ -117,7 +118,7 @@ def main():
     window.update_drawables()
 
     # Running the program until the window closes
-    arcade.run()
+    run()
 
 
 # Running main function

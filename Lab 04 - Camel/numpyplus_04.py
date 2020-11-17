@@ -4,27 +4,27 @@ Line A: This line of code is rewritten from https://stackoverflow.com/questions/
 """
 
 # Importing libraries
-import numpy as np
+from numpy import *
 
 
 # Defining functions
-def is_prime(number: int):
+def is_prime(testing_number: int):
     """
     Determines whether a number is prime or not.
 
-    :param number: number you want to know whether it is prime or not.
+    :param testing_number: number you want to know whether it is prime or not.
     :return: whether or not the number is prime. Returns None if the number is less than 2.
     """
     # Returning none if the number is less than 2
-    if number < 2:
+    if testing_number < 2:
         return None
 
     # Checking if the number is odd or 2
-    elif number % 2 == 1 or number == 2:
+    elif testing_number % 2 == 1 or testing_number == 2:
         # Looping through all odd divisors greater than 1 and less than the number's square root
-        for current_divisor in range(3, int(np.sqrt(number)) + 1, 2):
+        for current_divisor in range(3, int(sqrt(testing_number)) + 1, 2):
             # Checking if the number is divisible by the current divisor
-            if (number % current_divisor) == 0:
+            if (testing_number % current_divisor) == 0:
                 break
 
         # Returning true if there is no divisor the number is divisible by
@@ -35,11 +35,11 @@ def is_prime(number: int):
     return False
 
 
-def sum_digits(number: int, base: int = 10):
+def sum_digits(testing_number: int, base: int = 10):
     """
     Calculates the sum of a number's digits.
 
-    :param number: number you want to sum the digits of.
+    :param testing_number: number you want to sum the digits of.
     :param base: base you want number to be in when summing digits.
     :return: sum of number's digits.
     """
@@ -47,9 +47,9 @@ def sum_digits(number: int, base: int = 10):
     digit_sum: int = 0
 
     # Summing the number's digits
-    while number:
+    while testing_number:
         # Adding a digit to the digit sum
-        digit_sum, number = digit_sum + number % base, number // base  # *** A ***
+        digit_sum, testing_number = digit_sum + testing_number % base, testing_number // base  # *** A ***
 
     # Returning the digit sum
     return digit_sum

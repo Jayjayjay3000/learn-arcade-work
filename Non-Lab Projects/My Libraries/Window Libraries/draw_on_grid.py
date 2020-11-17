@@ -1,10 +1,10 @@
 # Importing libraries
 import grid_window as grid
-import draw_shapes as draw
+from draw_shapes import *
 
 
 # Defining classes
-class Window(grid.Window, draw.Window):
+class Window(grid.Window, Window):
     """
     Class for windows with grids you can draw on.
     """
@@ -22,7 +22,7 @@ class Window(grid.Window, draw.Window):
         super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color)
 
 
-class Able(draw.Able):
+class Able(Able):
     """
     Class for generic things you can draw on a grid.
     """

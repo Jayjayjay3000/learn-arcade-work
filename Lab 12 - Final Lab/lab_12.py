@@ -1,12 +1,11 @@
 # Importing libraries
-import arcade
-import draw_shapes_11 as draw
+from arcade import run
 import grid_window_12 as grid
-import draw_on_grid_12 as grid_draw
+import draw_on_grid_12 as draw
 
 
 # Defining classes
-class Window(grid_draw.Window):
+class Window(draw.Window):
     """
     Class for this lab's window.
     """
@@ -16,6 +15,7 @@ class Window(grid_draw.Window):
                  title: str, background_color):
         # Making the new window and setting its background color
         super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color)
+        self.drawables = self.drawables
 
         # Creating additional class attributes
         self.selected_tiles = [[0 for _ in range(self.amount_of_tile_columns)] for _ in range(self.amount_of_tile_rows)]
@@ -39,7 +39,7 @@ class Window(grid_draw.Window):
             current_drawable.window = self
 
 
-class Drawable(grid_draw.Able):
+class Drawable(draw.Able):
     def __init__(self):
         super().__init__()
 
@@ -89,7 +89,7 @@ def main():
     window.update_drawables()
 
     # Running the program until the window closes
-    arcade.run()
+    run()
 
 
 # Running main function

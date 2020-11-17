@@ -1,6 +1,6 @@
 # Importing libraries
-import arcade
-import numpy as np
+from arcade import run
+from numpy import pi
 import draw_shapes_03 as draw
 import text_03 as text
 
@@ -17,7 +17,7 @@ ROAD_LINE_AMOUNT: int = 128
 ROAD_LINE_FREQUENCY: float = 1/3
 ROAD_LINE_WIDTH_DECREASE_RATIO: float = 1/6
 MODE_2_ROAD_LINE_STARTING_COLOR = (255, 0, 0)
-MODE_2_ROAD_LINE_HUE_INCREMENT: float = 1 / np.pi ** 2
+MODE_2_ROAD_LINE_HUE_INCREMENT: float = 1 / pi ** 2
 MODE_1_ROAD_SIDE_LINE_COLOR = (64, 64, 64)
 MODE_2_HORIZON_LINE_WIDTH: float = 1
 MODE_2_MOON_LINE_COLOR = (0, 255, 255)
@@ -209,7 +209,7 @@ def main():
 
     # --- Running until window closes ---
 
-    arcade.run()
+    run()
 
 
 # Running main function

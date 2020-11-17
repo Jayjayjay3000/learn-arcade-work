@@ -1,12 +1,14 @@
 # Importing libraries
 import numpy as np
-import arcade
-import colorsysplus
-import window_05 as w
+from arcade import draw_line as line
+from arcade import draw_rectangle_outline as rectangle_outline
+from arcade import draw_rectangle_filled as rectangle_filled
+from arcade import draw_arc_outline as arc_outline
+from window_05 import *
 
 
 # Defining classes
-class Window(w.Window):
+class Window(Window):
     """
     Class for windows you can draw on.
     """
@@ -163,8 +165,8 @@ class Moon(Able):
                            self.line_width, -self.tilt_angle, self.num_segments)
 
         # Drawing the moon's inner arc
-        arcade.draw_arc_outline(self.x, self.y, phase, diameter, self.color, -90, 90,
-                                self.line_width, -self.tilt_angle, self.num_segments)
+        arc_outline(self.x, self.y, phase, diameter, self.color, -90, 90,
+                    self.line_width, -self.tilt_angle, self.num_segments)
 
     def on_draw(self):
         """
@@ -184,7 +186,7 @@ def horizontal_line(start_x: float, end_x: float, y: float, color, line_width: f
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param line_width: Width of the line in pixels.
     """
-    arcade.draw_line(start_x, y, end_x, y, color, line_width)
+    line(start_x, y, end_x, y, color, line_width)
 
 
 def cl_horizontal_line(center_x: float, length: float, y: float, color, line_width: float = 1):
@@ -197,7 +199,7 @@ def cl_horizontal_line(center_x: float, length: float, y: float, color, line_wid
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param line_width: Width of the line in pixels.
     """
-    arcade.draw_line(center_x - length / 2, y, center_x + length / 2, y, color, line_width)
+    line(center_x - length / 2, y, center_x + length / 2, y, color, line_width)
 
 
 def vertical_line(x: float, start_y: float, end_y: float, color, line_width: float = 1):
@@ -210,7 +212,7 @@ def vertical_line(x: float, start_y: float, end_y: float, color, line_width: flo
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param line_width: Width of the line in pixels.
     """
-    arcade.draw_line(x, start_y, x, end_y, color, line_width)
+    line(x, start_y, x, end_y, color, line_width)
 
 
 def cla_line(center_x: float, center_y: float, length: float, tilt_angle: float, color, line_width: float = 1):
@@ -226,8 +228,8 @@ def cla_line(center_x: float, center_y: float, length: float, tilt_angle: float,
     """
     length_x: float = length * np.cos(np.radians(tilt_angle))
     length_y: float = length * np.sin(np.radians(tilt_angle))
-    arcade.draw_line(center_x - length_x / 2, center_y - length_y / 2, center_x + length_x / 2, center_y + length_y / 2,
-                     color, line_width)
+    line(center_x - length_x / 2, center_y - length_y / 2, center_x + length_x / 2, center_y + length_y / 2, color,
+         line_width)
 
 
 def square_outline(center_x: float, center_y: float, side_length: float, color,
@@ -242,7 +244,7 @@ def square_outline(center_x: float, center_y: float, side_length: float, color,
     :param border_width: width of the lines, in pixels.
     :param tilt_angle: rotation of the square. Defaults to zero.
     """
-    arcade.draw_rectangle_outline(center_x, center_y, side_length, side_length, color, border_width, tilt_angle)
+    rectangle_outline(center_x, center_y, side_length, side_length, color, border_width, tilt_angle)
 
 
 def square_filled(center_x: float, center_y: float, side_length: float, color, tilt_angle: float = 0):
@@ -255,7 +257,7 @@ def square_filled(center_x: float, center_y: float, side_length: float, color, t
     :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
     :param tilt_angle: rotation of the square. Defaults to zero.
     """
-    arcade.draw_rectangle_filled(center_x, center_y, side_length, side_length, color, tilt_angle)
+    rectangle_filled(center_x, center_y, side_length, side_length, color, tilt_angle)
 
 
 def circle_arc_outline(center_x: float, center_y: float, radius: float, color, start_angle: float, end_angle: float,
@@ -275,70 +277,5 @@ def circle_arc_outline(center_x: float, center_y: float, radius: float, color, s
     :param num_segments: float of triangle segments that make up this circle.
         Higher is better quality, but slower render time.
     """
-    arcade.draw_arc_outline(center_x, center_y, radius * 2, radius * 2, color, start_angle, end_angle,
-                            border_width, tilt_angle, num_segments)
-
-
-def road_lines(center_x: float, starting_line, end_length: float, end_y: float, amount: int, frequency: float,
-               end_width: float = 1, width_decrease_ratio: float = 1/6, rainbowness: float = 0):
-    """
-    Draws a series of perspective lines, reminiscent of a strait road.
-
-    :param center_x: x position of road center.
-    :param starting_line: object used to make the first, bottom line.
-    :param end_length: length road lines converge to.
-    :param end_y: y position road lines converge to.
-    :param amount: amount of road lines.
-    :param frequency: fraction each road line gets toward the horizon.
-    :param end_width: Width the road lines converge to in pixels.
-    :param width_decrease_ratio: fraction each road line reduces the width toward the end_width.
-    :param rainbowness: amount color hue is incremented by each road line.
-        0 = same hue, 1/2 = -1/2 = opposite hue on the color wheel, etc.
-    """
-    # Making variables to prepare for drawing the road lines
-    y: float = starting_line.y
-    length: float = starting_line.size
-    color = starting_line.color
-    width: float = starting_line.line_width
-
-    # Drawing the road lines
-    for line_number in range(amount):
-        # Drawing a road line
-        cl_horizontal_line(center_x, length, y, color, width)
-
-        # Changing variables to prepare for drawing the next road line
-        length: float = end_length * frequency + length * (1 - frequency)
-        y: float = end_y * frequency + y * (1 - frequency)
-        if rainbowness:
-            color = colorsysplus.increment_hue(color, rainbowness)
-        width: float = end_width * frequency + width * (1 - width_decrease_ratio)
-
-
-def road(starting_road_line, road_side_lines, horizon_line,
-         window_width: int, center_x: float, road_line_amount: int, road_line_frequency: float,
-         road_line_end_width: float = 1, road_line_width_decrease_ratio: float = 1/6, road_rainbowness: float = 0):
-    """
-    Draws a perspective view of a strait road, including a horizon line.
-
-    :param starting_road_line: object used to make the first, bottom road line.
-    :param road_side_lines: object used to make the road-side line's color and line width.
-    :param horizon_line: object used to make the horizon line.
-    :param window_width: width of the window you are drawing road on. used for drawing the horizon.
-    :param center_x: x position of road center.
-    :param road_line_amount: amount of road lines.
-    :param road_line_frequency: fraction each road line gets toward the horizon line.
-    :param road_line_end_width: Width the road lines converge to in pixels.
-    :param road_line_width_decrease_ratio: fraction each road line reduces the width toward the end_width.
-    :param road_rainbowness: amount color of road lines' hue is incremented by each road line.
-        0 = same hue, 1/2 = -1/2 = opposite hue on the color wheel, etc.
-    """
-    # Drawing the road lines
-    road_lines(center_x, starting_road_line, 0, horizon_line.y, road_line_amount, road_line_frequency,
-               road_line_end_width, road_line_width_decrease_ratio, road_rainbowness)
-
-    # Drawing the road-side lines
-    arcade.draw_line(0, 0, center_x, horizon_line.y, road_side_lines.color, road_side_lines.line_width)
-    arcade.draw_line(window_width, 0, center_x, horizon_line.y, road_side_lines.color, road_side_lines.line_width)
-
-    # Drawing the horizon
-    horizontal_line(0, window_width, horizon_line.y, horizon_line.color, horizon_line.line_width)
+    arc_outline(center_x, center_y, radius * 2, radius * 2, color, start_angle, end_angle,
+                border_width, tilt_angle, num_segments)

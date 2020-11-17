@@ -1,6 +1,6 @@
 # Importing libraries
-import arcade
-import window_07 as window
+from arcade import run
+import window_07 as w
 
 # Making constants
 WINDOW_WIDTH: int = 512
@@ -12,9 +12,9 @@ BACKGROUND_COLOR = (64, 64, 64)
 # Defining main function
 def main():
     # Making class constants
-    lab_window = window.W(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TEXT, BACKGROUND_COLOR)
+    lab_window = w.Window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TEXT, BACKGROUND_COLOR)
 
-    arcade.run()
+    run()
 
 
 # Running main function

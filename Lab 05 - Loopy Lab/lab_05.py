@@ -1,5 +1,6 @@
 # Importing libraries
-import arcade
+from arcade import color
+from arcade import run
 import draw_shapes_05 as draw
 
 
@@ -12,7 +13,7 @@ class Window(draw.Window):
         """
         Constructs the window and sets its background color.
         """
-        super().__init__(1200, 600, "Lab 05 - Loopy Lab", arcade.color.AIR_FORCE_BLUE)
+        super().__init__(1200, 600, "Lab 05 - Loopy Lab", color.AIR_FORCE_BLUE)
 
     def on_draw(self):
         """
@@ -146,12 +147,12 @@ class Section(draw.Able):
                 # Setting the color of the square depending on the row and column the square is in,
                 # as well as the pattern ID
                 if self.get_use_white(row, column):
-                    color = arcade.color.WHITE
+                    current_color = color.WHITE
                 else:
-                    color = arcade.color.BLACK
+                    current_color = color.BLACK
 
                 # Drawing the square
-                draw.square_filled(current_x, current_y, 5, color)
+                draw.square_filled(current_x, current_y, 5, current_color)
 
     def on_draw(self):
         """
@@ -169,7 +170,7 @@ def draw_section_outlines():
         # Drawing a row of section outlines
         for section_column in range(4):
             # Drawing a section outline
-            draw.square_outline(section_column * 300 + 150, section_row * 300 + 150, 300, arcade.color.BLACK)
+            draw.square_outline(section_column * 300 + 150, section_row * 300 + 150, 300, color.BLACK)
 
 
 # Defining main function
@@ -192,7 +193,7 @@ def main():
     window.drawables = [section_1, section_2, section_3, section_4, section_5, section_6, section_7, section_8]
 
     # Running the program until the window closes
-    arcade.run()
+    run()
 
 
 # Running main function

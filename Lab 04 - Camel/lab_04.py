@@ -1,6 +1,6 @@
 # Importing libraries
-import random
-import numpyplus_04 as npp
+import random as r
+import numpyplus_04 as np
 import text_04 as text
 
 # Making constants
@@ -130,7 +130,7 @@ def draw_card(hand_numbers: list, player_position: int):
     :return: new values for the cards in your hand, including card drawn.
     """
     # Setting the drawn card's value
-    new_card_number: int = ((npp.sum_digits(player_position) - 1) % len(CARD_NAMES)) + 1
+    new_card_number: int = ((np.sum_digits(player_position) - 1) % len(CARD_NAMES)) + 1
 
     # Adding the card value to the list of hand values
     hand_numbers.append(new_card_number)
@@ -150,7 +150,7 @@ def draw_hand():
 
     # Adding random card values to said hand until it's full
     for _ in range(HAND_SIZE):
-        hand_numbers.append(random.randrange(1, len(CARD_NAMES) + 1))
+        hand_numbers.append(r.randrange(1, len(CARD_NAMES) + 1))
 
     # Returning the new hand values
     return hand_numbers
@@ -243,7 +243,7 @@ def use_card(using_card_number: int, player_position: int, magician_position: in
             print(DOUBLE_JOKER_USED_LINE)
         else:
             print(JOKER_USED_LINE)
-            meta_using_card_number: int = random.randrange(1, len(CARD_NAMES) + 1)
+            meta_using_card_number: int = r.randrange(1, len(CARD_NAMES) + 1)
             player_position, magician_position, hand_numbers \
                 = use_card(meta_using_card_number, player_position, magician_position, hand_numbers, using_king, True)
 
