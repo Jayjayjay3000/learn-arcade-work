@@ -1,6 +1,6 @@
 # Importing libraries
-import grid_window as grid
-import draw_shapes as draw
+import grid_window_12 as grid
+import draw_shapes_12 as draw
 
 
 # Defining classes

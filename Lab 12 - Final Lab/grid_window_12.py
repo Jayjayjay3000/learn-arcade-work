@@ -1,6 +1,6 @@
 # Importing libraries
-import window as w
-import draw_shapes as draw
+import window_12 as w
+import draw_shapes_12 as draw
 
 
 # Defining classes

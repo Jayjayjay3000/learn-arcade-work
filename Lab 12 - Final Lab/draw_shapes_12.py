@@ -2,7 +2,7 @@
 import numpy as np
 import arcade
 import colorsysplus
-import window as w
+import window_12 as w
 
 
 # Defining classes
