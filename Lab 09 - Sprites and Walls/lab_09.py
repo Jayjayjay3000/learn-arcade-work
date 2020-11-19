@@ -87,14 +87,14 @@ class Window(w.Window):
         :param key: Key that was hit
         :param modifiers: Bitwise 'and' of all modifiers (shift, ctrl, num lock) pressed during this event.
         """
-        if key == arcade.key.A:
-            self.a_is_pressed = True
-        elif key == arcade.key.D:
-            self.d_is_pressed = True
-        elif key == arcade.key.W:
+        if key == arcade.key.W:
             self.w_is_pressed = True
         elif key == arcade.key.S:
             self.s_is_pressed = True
+        elif key == arcade.key.A:
+            self.a_is_pressed = True
+        elif key == arcade.key.D:
+            self.d_is_pressed = True
 
     def on_key_release(self, key: int, modifiers: int):
         """
