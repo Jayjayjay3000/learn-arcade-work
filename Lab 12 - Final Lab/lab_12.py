@@ -154,11 +154,11 @@ class Entity(Drawable):
         line: str = f"Error: Entity {self}'s ability to move isn't set"
         return line
 
-    def __init__(self):
+    def __init__(self, starting_tile_x: int, starting_tile_y: int):
         super().__init__()
-        self.tile_x = None
-        self.tile_y = None
+        self.tile_x: int = starting_tile_x
         self.tile_x_offset_ratio: float = self.TILE_X_OFFSET_RATIO
+        self.tile_y: int = starting_tile_y
         self.tile_y_offset_ratio: float = self.TILE_Y_OFFSET_RATIO
         self.size_tile_ratio: float = self.SIZE_TILE_RATIO
         self.line_width: float = self.LINE_WIDTH
@@ -205,24 +205,24 @@ class Player(Entity):
     CAN_JAB: bool = False
 
     def __init__(self, starting_tile_x: int, starting_tile_y: int, starting_max_health: int):
-        super().__init__()
-        self.tile_x: int = starting_tile_x
-        self.tile_y: int = starting_tile_y
+        super().__init__(starting_tile_x, starting_tile_y)
         self.color = self.COLOR
         self.max_health = starting_max_health
         self.full_heal()
+        self.health_bar = HealthBar(self)
         self.can_move: bool = self.CAN_MOVE
         self.can_jab: bool = self.CAN_JAB
 
     def on_draw(self):
         self.draw()
+        self.health_bar.on_draw()
 
 
 class Enemy(Entity):
     COLOR = (255, 0, 0)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, starting_tile_x: int, starting_tile_y: int):
+        super().__init__(starting_tile_x, starting_tile_y)
         self.color = self.COLOR
 
     def determine_movement_direction(self):
@@ -272,9 +272,7 @@ class FistsPerson(Enemy):
     MAX_HEALTH: int = 1
 
     def __init__(self, starting_tile_x: int, starting_tile_y: int):
-        super().__init__()
-        self.tile_x: int = starting_tile_x
-        self.tile_y: int = starting_tile_y
+        super().__init__(starting_tile_x, starting_tile_y)
         self.max_health: int = self.MAX_HEALTH
         self.full_heal()
         self.can_move: bool = self.CAN_MOVE
@@ -282,6 +280,36 @@ class FistsPerson(Enemy):
 
     def on_draw(self):
         self.draw()
+
+
+class HealthBar(Drawable):
+    TILE_X_OFFSET_RATIO: float = 1/2
+    TILE_Y_OFFSET_RATIO: float = 3/4
+    SIZE_TILE_RATIO: float = 1/4
+    COLOR = (0, 255, 0)
+    WIDTH: float = 2
+
+    def __init__(self, entity):
+        super().__init__()
+        self.entity = entity
+        self.window = self.entity.window
+        self.tile_x: int = self.entity.tile_x
+        self.tile_x_offset_ratio: float = self.TILE_X_OFFSET_RATIO
+        self.tile_y: int = self.entity.tile_y
+        self.tile_y_offset_ratio: float = self.TILE_Y_OFFSET_RATIO
+        #self.set_position_from_tile_and_offset()
+        self.size_tile_ratio: float = self.SIZE_TILE_RATIO
+        #self.set_size_from_tile_ratio()
+        self.color = self.COLOR
+        self.line_width: float = self.WIDTH
+
+    def draw(self):
+        for current_segment in range(self.entity.max_health):
+            draw.cl_horizontal_line(self.x, self.size, self.y, self.color, self.line_width)
+
+    def on_draw(self):
+        #self.draw()
+        pass
 
 
 # Defining functions
