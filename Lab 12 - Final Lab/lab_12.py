@@ -194,6 +194,8 @@ class Entity(Drawable):
             self.tile_x = resulting_tile_x
             self.tile_y = resulting_tile_y
             self.set_position_from_tile_and_offset()
+            if self == self.window.player:
+                self.health_bar.update_position()
             self.window.update_grid_tile_array()
 
         self.has_moved: bool = True
@@ -284,31 +286,34 @@ class FistsPerson(Enemy):
 
 class HealthBar(Drawable):
     TILE_X_OFFSET_RATIO: float = 1/2
-    TILE_Y_OFFSET_RATIO: float = 3/4
+    TILE_Y_OFFSET_RATIO: float = 7/8
     SIZE_TILE_RATIO: float = 1/4
     COLOR = (0, 255, 0)
     WIDTH: float = 2
 
     def __init__(self, entity):
         super().__init__()
-        self.entity = entity
-        self.window = self.entity.window
-        self.tile_x: int = self.entity.tile_x
+        self.tile_x = None
         self.tile_x_offset_ratio: float = self.TILE_X_OFFSET_RATIO
-        self.tile_y: int = self.entity.tile_y
+        self.tile_y = None
         self.tile_y_offset_ratio: float = self.TILE_Y_OFFSET_RATIO
-        #self.set_position_from_tile_and_offset()
         self.size_tile_ratio: float = self.SIZE_TILE_RATIO
-        #self.set_size_from_tile_ratio()
         self.color = self.COLOR
         self.line_width: float = self.WIDTH
+        self.segment_distance_ratio= None
+        self.entity = entity
 
     def draw(self):
         for current_segment in range(self.entity.max_health):
             draw.cl_horizontal_line(self.x, self.size, self.y, self.color, self.line_width)
 
+    def update_position(self):
+        self.tile_x: int = self.entity.tile_x
+        self.tile_y: int = self.entity.tile_y
+        self.set_position_from_tile_and_offset()
+
     def on_draw(self):
-        #self.draw()
+        self.draw()
         pass
 
 
@@ -338,6 +343,9 @@ def main():
     window.player.window = window
     window.player.set_position_from_tile_and_offset()
     window.player.set_size_from_tile_ratio()
+    window.player.health_bar.window = window
+    window.player.health_bar.update_position()
+    window.player.health_bar.set_size_from_tile_ratio()
     window.starting_tiles = [[0] * window.amount_of_tile_columns for _ in range(window.amount_of_tile_rows)]
     window.starting_tiles[6][6] = 1
     window.starting_tiles[0][7] = 1
