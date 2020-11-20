@@ -1,6 +1,8 @@
 # Importing libraries
 from arcade import key
 from arcade import run
+import random as r
+import numpyplus_12 as np
 import grid_window_12 as grid
 import draw_on_grid_12 as draw
 
@@ -33,6 +35,17 @@ class Window(draw.Window):
         self.time_between_enemy_steps = None
         self.time_until_next_enemy_step = None
 
+    def create_enemy_list(self):
+        for current_row_number in range(self.amount_of_tile_rows):
+            for current_column_number in range(self.amount_of_tile_columns):
+                current_starting_tile_id = self.starting_tiles[current_row_number][current_column_number]
+                if current_starting_tile_id == 1:
+                    current_enemy = FistsPerson(current_column_number, current_row_number)
+                    current_enemy.window = self
+                    current_enemy.set_position_from_tile_and_offset()
+                    current_enemy.set_size_from_tile_ratio()
+                    self.enemy_list.append(current_enemy)
+
     def on_draw(self):
         """
 
@@ -55,12 +68,13 @@ class Window(draw.Window):
                 self.player.has_moved = False
                 self.phase_id = 1
                 self.time_until_next_enemy_step = self.time_between_enemy_steps
+
         elif self.phase_id == 1:
             self.time_until_next_enemy_step -= delta_time
             if self.time_until_next_enemy_step <= 0:
                 self.update_possible_enemy_steps()
                 current_enemy_step: list = self.determine_current_enemy_step()
-                self.execute_enemy_step(current_enemy_step)
+                execute_enemy_step(current_enemy_step)
                 self.possible_enemy_steps.remove(current_enemy_step)
                 if len(self.possible_enemy_steps) == 0:
                     self.time_until_next_enemy_step = None
@@ -68,22 +82,10 @@ class Window(draw.Window):
                     self.phase_id = 0
                 else:
                     self.time_until_next_enemy_step = self.time_between_enemy_steps
+
         else:
             print(self.get_not_a_compatible_phase_id_line())
             exit()
-
-    def create_enemy_list(self):
-        for current_row_number in range(self.amount_of_tile_rows):
-            for current_column_number in range(self.amount_of_tile_columns):
-                current_starting_tile_id = self.starting_tiles[current_row_number][current_column_number]
-                if current_starting_tile_id == 1:
-                    current_enemy = FistsPerson()
-                    current_enemy.window = self
-                    current_enemy.tile_x = current_column_number
-                    current_enemy.tile_y = current_row_number
-                    current_enemy.set_position_from_tile_and_offset()
-                    current_enemy.set_size_from_tile_ratio()
-                    self.enemy_list.append(current_enemy)
 
     def update_grid_tile_array(self):
         self.grid_tiles: list = [[None] * self.amount_of_tile_columns for _ in range(self.amount_of_tile_rows)]
@@ -101,13 +103,12 @@ class Window(draw.Window):
         current_enemy_step = self.possible_enemy_steps[0]
         return current_enemy_step
 
-    def execute_enemy_step(self, enemy_step: list):
-        if enemy_step[1] == 0:
-            movement_direction = enemy_step[0].determine_movement_direction()
-            enemy_step[0].move(movement_direction)
+    def is_tile_empty(self, tile_x: int, tile_y: int):
+        if 0 <= tile_x < self.amount_of_tile_columns and 0 <= tile_y < self.amount_of_tile_rows \
+                and self.grid_tiles[tile_y][tile_x] is None:
+            return True
         else:
-            print(get_not_a_compatible_enemy_step_line(enemy_step))
-            exit()
+            return False
 
     def reset_enemy_step_attributes(self):
         for current_enemy in self.enemy_list:
@@ -162,11 +163,17 @@ class Entity(Drawable):
         self.size_tile_ratio: float = self.SIZE_TILE_RATIO
         self.line_width: float = self.LINE_WIDTH
         self.tilt_angle: float = self.TILT_ANGLE
+        self.max_health = None
+        self.current_health = None
         self.can_move = None
         self.has_moved: bool = False
+        self.can_jab = None
 
     def draw(self):
         draw.square_outline(self.x, self.y, self.size, self.color, self.line_width, self.tilt_angle)
+
+    def full_heal(self):
+        self.current_health = self.max_health
 
     def move(self, direction_id: int):
         if direction_id == 2:
@@ -175,29 +182,37 @@ class Entity(Drawable):
             resulting_tile_x = self.tile_x + 1
         else:
             resulting_tile_x = self.tile_x
+
         if direction_id == 0:
             resulting_tile_y = self.tile_y + 1
         elif direction_id == 1:
             resulting_tile_y = self.tile_y - 1
         else:
             resulting_tile_y = self.tile_y
-        if 0 <= resulting_tile_x < self.window.amount_of_tile_columns \
-                and 0 <= resulting_tile_y < self.window.amount_of_tile_rows:
+
+        if self.window.is_tile_empty(resulting_tile_x, resulting_tile_y):
             self.tile_x = resulting_tile_x
             self.tile_y = resulting_tile_y
             self.set_position_from_tile_and_offset()
             self.window.update_grid_tile_array()
-            self.has_moved: bool = True
+
+        self.has_moved: bool = True
 
 
 class Player(Entity):
     COLOR = (255, 255, 255)
     CAN_MOVE: bool = True
+    CAN_JAB: bool = False
 
-    def __init__(self):
+    def __init__(self, starting_tile_x: int, starting_tile_y: int, starting_max_health: int):
         super().__init__()
+        self.tile_x: int = starting_tile_x
+        self.tile_y: int = starting_tile_y
         self.color = self.COLOR
+        self.max_health = starting_max_health
+        self.full_heal()
         self.can_move: bool = self.CAN_MOVE
+        self.can_jab: bool = self.CAN_JAB
 
     def on_draw(self):
         self.draw()
@@ -212,28 +227,71 @@ class Enemy(Entity):
 
     def determine_movement_direction(self):
         player = self.window.player
-        if player.tile_x + player.tile_y > self.tile_x + self.tile_y:
-            if player.tile_x - player.tile_y > self.tile_x - self.tile_y:
-                movement_direction = 3
+        is_surrounding_tile_empty: list \
+            = [self.window.is_tile_empty(self.tile_x, self.tile_y + 1),
+               self.window.is_tile_empty(self.tile_x, self.tile_y - 1),
+               self.window.is_tile_empty(self.tile_x - 1, self.tile_y),
+               self.window.is_tile_empty(self.tile_x + 1, self.tile_y)]
+
+        if np.greater_than_or_randomly_equal_to(player.tile_x, self.tile_x):
+            if np.greater_than_or_randomly_equal_to(player.tile_y, self.tile_y):
+                if np.greater_than_or_randomly_equal_to(player.tile_x - player.tile_y, self.tile_x - self.tile_y):
+                    movement_direction_priority = [3, 0, 1, 2]
+                else:
+                    movement_direction_priority = [0, 3, 2, 1]
             else:
-                movement_direction = 0
+                if np.greater_than_or_randomly_equal_to(player.tile_x + player.tile_y, self.tile_x + self.tile_y):
+                    movement_direction_priority = [3, 1, 0, 2]
+                else:
+                    movement_direction_priority = [1, 3, 2, 0]
         else:
-            if player.tile_x - player.tile_y > self.tile_x - self.tile_y:
-                movement_direction = 1
+            if np.greater_than_or_randomly_equal_to(player.tile_y, self.tile_y):
+                if np.greater_than_or_randomly_equal_to(player.tile_x + player.tile_y, self.tile_x + self.tile_y):
+                    movement_direction_priority = [0, 2, 3, 1]
+                else:
+                    movement_direction_priority = [2, 0, 1, 3]
             else:
-                movement_direction = 2
-        return movement_direction
+                if np.greater_than_or_randomly_equal_to(player.tile_x - player.tile_y, self.tile_x - self.tile_y):
+                    movement_direction_priority = [1, 2, 3, 0]
+                else:
+                    movement_direction_priority = [2, 1, 0, 3]
+
+        for current_movement_direction_id in movement_direction_priority:
+            if is_surrounding_tile_empty[current_movement_direction_id]:
+                movement_direction_id = current_movement_direction_id
+                break
+        else:
+            movement_direction_id = r.randrange(0, 4)
+
+        return movement_direction_id
 
 
 class FistsPerson(Enemy):
     CAN_MOVE: bool = True
+    CAN_JAB: bool = True
+    MAX_HEALTH: int = 1
 
-    def __init__(self):
+    def __init__(self, starting_tile_x: int, starting_tile_y: int):
         super().__init__()
-        self.can_move = self.CAN_MOVE
+        self.tile_x: int = starting_tile_x
+        self.tile_y: int = starting_tile_y
+        self.max_health: int = self.MAX_HEALTH
+        self.full_heal()
+        self.can_move: bool = self.CAN_MOVE
+        self.can_jab: bool = self.CAN_JAB
 
     def on_draw(self):
         self.draw()
+
+
+# Defining functions
+def execute_enemy_step(enemy_step: list):
+    if enemy_step[1] == 0:
+        movement_direction_id = enemy_step[0].determine_movement_direction()
+        enemy_step[0].move(movement_direction_id)
+    else:
+        print(get_not_a_compatible_enemy_step_line(enemy_step))
+        exit()
 
 
 # Running main function
@@ -242,9 +300,7 @@ def main():
     margins: object = Margins()
     margins.color = (128, 128, 128)
     margins.line_width = 2
-    player = Player()
-    player.tile_x = 1
-    player.tile_y = 1
+    player = Player(1, 1, 3)
 
     # Making class constants for the window
     window = Window(48, 8, 8, "Test", (0, 0, 0))
@@ -256,6 +312,7 @@ def main():
     window.player.set_size_from_tile_ratio()
     window.starting_tiles = [[0] * window.amount_of_tile_columns for _ in range(window.amount_of_tile_rows)]
     window.starting_tiles[6][6] = 1
+    window.starting_tiles[0][7] = 1
     window.create_enemy_list()
     window.update_grid_tile_array()
     window.update_drawables()
