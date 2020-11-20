@@ -19,8 +19,7 @@ class Window(draw.Window):
         self.drawables: list = self.drawables
 
         # Creating additional class attributes
-        self.selected_tiles: list \
-            = [[0 for _ in range(self.amount_of_tile_columns)] for _ in range(self.amount_of_tile_rows)]
+        self.selected_tiles: list = [[0] * self.amount_of_tile_columns for _ in range(self.amount_of_tile_rows)]
 
     def on_draw(self):
         """
@@ -31,6 +30,23 @@ class Window(draw.Window):
 
         # Drawing the objects in the drawables list
         self.draw_drawables()
+
+    def update_drawables(self):
+        """
+        Updates the drawables list.
+        """
+        cell_selection_list: list = []
+        for current_row_number in range(self.amount_of_tile_rows):
+            for current_column_number in range(self.amount_of_tile_columns):
+                if self.selected_tiles[current_row_number][current_column_number] == 1:
+                    cell_selection = CellSelection()
+                    cell_selection.window = self
+                    cell_selection.tile_x = current_column_number
+                    cell_selection.tile_y = current_row_number
+                    cell_selection.set_position_from_tile_and_offset()
+                    cell_selection.set_size_from_tile_ratio()
+                    cell_selection_list.append(cell_selection)
+        self.drawables: list = cell_selection_list + [self.margins]
 
     def on_mouse_press(self, mouse_x: int, mouse_y: int, mouse_button: int, modifiers: int):
         if mouse_button == MOUSE_BUTTON_LEFT:
@@ -48,23 +64,6 @@ class Window(draw.Window):
             else:
                 print(self.NOT_A_TILE_ID_LINE)
                 exit()
-
-    def update_drawables(self):
-        """
-        Updates the drawables list.
-        """
-        cell_selection_list: list = []
-        for current_row in range(self.amount_of_tile_rows):
-            for current_column in range(self.amount_of_tile_columns):
-                if self.selected_tiles[current_row][current_column] == 1:
-                    cell_selection = CellSelection()
-                    cell_selection.window = self
-                    cell_selection.tile_x = current_column
-                    cell_selection.tile_y = current_row
-                    cell_selection.set_position_from_tile_and_offset()
-                    cell_selection.set_size_from_tile_ratio()
-                    cell_selection_list.append(cell_selection)
-        self.drawables: list = cell_selection_list + [self.margins]
 
 
 class Drawable(draw.Able):
