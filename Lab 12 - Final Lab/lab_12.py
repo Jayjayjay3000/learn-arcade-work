@@ -100,8 +100,19 @@ class Window(draw.Window):
                 self.possible_enemy_steps.append([current_enemy, 0])
 
     def determine_current_enemy_step(self):
-        current_enemy_step = self.possible_enemy_steps[0]
-        return current_enemy_step
+        closest_enemy_steps: list = []
+        closest_enemy_distance_to_player = None
+        for current_enemy_step in self.possible_enemy_steps:
+            current_enemy_distance_to_player = current_enemy_step[0].get_tile_distance_to_player()
+            if closest_enemy_distance_to_player is None \
+                    or current_enemy_distance_to_player < closest_enemy_distance_to_player:
+                closest_enemy_steps: list = [current_enemy_step]
+                closest_enemy_distance_to_player = current_enemy_distance_to_player
+            elif current_enemy_distance_to_player == closest_enemy_distance_to_player:
+                closest_enemy_steps.append(current_enemy_step)
+
+        chosen_enemy_step = np.random_element_from_list(closest_enemy_steps)
+        return chosen_enemy_step
 
     def is_tile_empty(self, tile_x: int, tile_y: int):
         if 0 <= tile_x < self.amount_of_tile_columns and 0 <= tile_y < self.amount_of_tile_rows \
@@ -227,6 +238,11 @@ class Enemy(Entity):
         super().__init__(starting_tile_x, starting_tile_y)
         self.color = self.COLOR
 
+    def get_tile_distance_to_player(self):
+        player = self.window.player
+        distance = np.distance_of_two_points((player.tile_x, player.tile_y), (self.tile_x, self.tile_y))
+        return distance
+
     def determine_movement_direction(self):
         player = self.window.player
         is_surrounding_tile_empty: list \
@@ -300,7 +316,7 @@ class HealthBar(Drawable):
         self.size_tile_ratio: float = self.SIZE_TILE_RATIO
         self.color = self.COLOR
         self.line_width: float = self.WIDTH
-        self.segment_distance_ratio= None
+        self.segment_distance_ratio = None
         self.entity = entity
 
     def draw(self):
@@ -353,7 +369,7 @@ def main():
     window.update_grid_tile_array()
     window.update_drawables()
     window.phase_id = 0
-    window.time_between_enemy_steps = .25
+    window.time_between_enemy_steps = .2
 
     # Running the program until the window closes
     run()

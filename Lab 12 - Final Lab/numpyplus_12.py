@@ -36,6 +36,13 @@ def is_prime(testing_number: int):
     return False
 
 
+def distance_of_two_points(point_a: tuple, point_b: tuple):
+    x_difference = point_b[0] - point_a[0]
+    y_difference = point_b[1] - point_a[1]
+    distance = sqrt(x_difference ** 2 + y_difference ** 2)
+    return distance
+
+
 def greater_than_or_randomly_equal_to(a: float, b: float):
     if a > b:
         return True
@@ -78,6 +85,12 @@ def sum_digits(testing_number: int, base: int = 10):
 
     # Returning the digit sum
     return digit_sum
+
+
+def random_element_from_list(list_to_get_element: list):
+    random_index = r.randrange(0, len(list_to_get_element))
+    random_element = list_to_get_element[random_index]
+    return random_element
 
 
 def sum_list(list_to_sum: list):
