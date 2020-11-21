@@ -32,6 +32,8 @@ def main():
     window = Window(48, 8, 8, "Test", (0, 0, 0))
     window.margins = margins
     window.margins.window = window
+
+    # Initially updating variables
     window.update_drawables()
 
     # Running the program until the window closes

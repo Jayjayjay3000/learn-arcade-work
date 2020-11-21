@@ -303,8 +303,8 @@ class FistsPerson(Enemy):
 class HealthBar(Drawable):
     TILE_X_OFFSET_RATIO: float = 1/2
     TILE_Y_OFFSET_RATIO: float = 7/8
-    SIZE_TILE_RATIO: float = 1/4
     COLOR = (0, 255, 0)
+    EMPTY_COLOR = (96, 32, 32)
     WIDTH: float = 2
 
     def __init__(self, entity):
@@ -313,24 +313,42 @@ class HealthBar(Drawable):
         self.tile_x_offset_ratio: float = self.TILE_X_OFFSET_RATIO
         self.tile_y = None
         self.tile_y_offset_ratio: float = self.TILE_Y_OFFSET_RATIO
-        self.size_tile_ratio: float = self.SIZE_TILE_RATIO
+        self.size_tile_ratio = None
         self.color = self.COLOR
+        self.empty_color = self.EMPTY_COLOR
         self.line_width: float = self.WIDTH
+        self.segment_distance = None
         self.segment_distance_ratio = None
         self.entity = entity
-
-    def draw(self):
-        for current_segment in range(self.entity.max_health):
-            draw.cl_horizontal_line(self.x, self.size, self.y, self.color, self.line_width)
 
     def update_position(self):
         self.tile_x: int = self.entity.tile_x
         self.tile_y: int = self.entity.tile_y
         self.set_position_from_tile_and_offset()
 
+    def set_segment_distance_ratio_from_max_health(self):
+        total_segment_amount: int = self.entity.max_health
+        self.segment_distance_ratio = 1 / (total_segment_amount + 1)
+
+    def set_size_tile_ratio_from_segment_distance_ratio(self):
+        self.size_tile_ratio = self.segment_distance_ratio * 2 / 3
+
+    def set_segment_distance_from_ratio(self):
+        self.segment_distance = self.segment_distance_ratio * self.window.tile_size
+
+    def draw(self):
+        total_segment_amount: int = self.entity.max_health
+        for current_segment_number in range(total_segment_amount):
+            current_segment_x = \
+                self.x + self.segment_distance * (current_segment_number - (total_segment_amount - 1) / 2)
+            if self.entity.current_health > current_segment_number:
+                current_segment_color = self.color
+            else:
+                current_segment_color = self.empty_color
+            draw.cl_horizontal_line(current_segment_x, self.size, self.y, current_segment_color, self.line_width)
+
     def on_draw(self):
         self.draw()
-        pass
 
 
 # Defining functions
@@ -357,19 +375,24 @@ def main():
     window.margins.window = window
     window.player = player
     window.player.window = window
-    window.player.set_position_from_tile_and_offset()
     window.player.set_size_from_tile_ratio()
     window.player.health_bar.window = window
-    window.player.health_bar.update_position()
+    window.player.health_bar.set_segment_distance_ratio_from_max_health()
+    window.player.health_bar.set_segment_distance_from_ratio()
+    window.player.health_bar.set_size_tile_ratio_from_segment_distance_ratio()
     window.player.health_bar.set_size_from_tile_ratio()
     window.starting_tiles = [[0] * window.amount_of_tile_columns for _ in range(window.amount_of_tile_rows)]
     window.starting_tiles[6][6] = 1
     window.starting_tiles[0][7] = 1
     window.create_enemy_list()
-    window.update_grid_tile_array()
     window.update_drawables()
-    window.phase_id = 0
     window.time_between_enemy_steps = .2
+
+    # Initially updating variables
+    window.player.set_position_from_tile_and_offset()
+    window.player.health_bar.update_position()
+    window.update_grid_tile_array()
+    window.phase_id = 0
 
     # Running the program until the window closes
     run()
