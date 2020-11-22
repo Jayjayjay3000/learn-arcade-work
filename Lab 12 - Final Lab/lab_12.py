@@ -7,6 +7,7 @@ import grid_window_12 as grid
 import draw_on_grid_12 as draw
 
 
+# Defining get text functions
 def get_not_a_compatible_enemy_step_line(enemy_step):
     line: str = f"Error: {enemy_step} is not a compatible enemy step"
     return line
@@ -73,9 +74,9 @@ class Window(draw.Window):
             self.time_until_next_enemy_step -= delta_time
             if self.time_until_next_enemy_step <= 0:
                 self.update_possible_enemy_steps()
-                current_enemy_step: list = self.determine_current_enemy_step()
-                execute_enemy_step(current_enemy_step)
-                self.possible_enemy_steps.remove(current_enemy_step)
+                current_chosen_enemy_step: list = self.determine_current_enemy_step()
+                execute_enemy_step(current_chosen_enemy_step)
+                self.possible_enemy_steps.remove(current_chosen_enemy_step)
                 if len(self.possible_enemy_steps) == 0:
                     self.time_until_next_enemy_step = None
                     self.reset_enemy_step_attributes()
@@ -96,8 +97,26 @@ class Window(draw.Window):
     def update_possible_enemy_steps(self):
         self.possible_enemy_steps = []
         for current_enemy in self.enemy_list:
-            if current_enemy.can_move and not current_enemy.has_moved:
+            if current_enemy.can_move is None:
+                print(current_enemy.get_movement_not_set_line())
+                exit()
+            elif current_enemy.can_move and not current_enemy.has_moved:
                 self.possible_enemy_steps.append([current_enemy, 0])
+
+    def reset_enemy_step_attributes(self):
+        for current_enemy in self.enemy_list:
+            if current_enemy.can_move is None:
+                print(current_enemy.get_movement_not_set_line())
+                exit()
+            elif current_enemy.can_move:
+                current_enemy.has_moved = False
+
+    def is_tile_empty(self, tile_x: int, tile_y: int):
+        if 0 <= tile_x < self.amount_of_tile_columns and 0 <= tile_y < self.amount_of_tile_rows \
+                and self.grid_tiles[tile_y][tile_x] is None:
+            return True
+        else:
+            return False
 
     def determine_current_enemy_step(self):
         closest_enemy_steps: list = []
@@ -113,18 +132,6 @@ class Window(draw.Window):
 
         chosen_enemy_step = np.random_element_from_list(closest_enemy_steps)
         return chosen_enemy_step
-
-    def is_tile_empty(self, tile_x: int, tile_y: int):
-        if 0 <= tile_x < self.amount_of_tile_columns and 0 <= tile_y < self.amount_of_tile_rows \
-                and self.grid_tiles[tile_y][tile_x] is None:
-            return True
-        else:
-            return False
-
-    def reset_enemy_step_attributes(self):
-        for current_enemy in self.enemy_list:
-            if current_enemy.can_move:
-                current_enemy.has_moved = False
 
     def on_key_press(self, pressed_key: int, modifiers: int):
         if self.player.can_move is None:
@@ -161,8 +168,12 @@ class Entity(Drawable):
     LINE_WIDTH: float = 1
     TILT_ANGLE: float = 45
 
-    def get_movement_not_set_line(self):
+    def get_ability_to_move_not_set_line(self):
         line: str = f"Error: Entity {self}'s ability to move isn't set"
+        return line
+
+    def get_ability_to_jab_not_set_line(self):
+        line: str = f"Error: Entity {self}'s ability to jab isn't set"
         return line
 
     def __init__(self, starting_tile_x: int, starting_tile_y: int):
@@ -208,6 +219,13 @@ class Entity(Drawable):
             if self == self.window.player:
                 self.health_bar.update_position()
             self.window.update_grid_tile_array()
+
+        elif self.can_jab is None:
+            print(self.get_ability_to_jab_not_set_line())
+            exit()
+
+        elif self.can_jab:
+            pass
 
         self.has_moved: bool = True
 
@@ -285,9 +303,9 @@ class Enemy(Entity):
 
 
 class FistsPerson(Enemy):
+    MAX_HEALTH: int = 1
     CAN_MOVE: bool = True
     CAN_JAB: bool = True
-    MAX_HEALTH: int = 1
 
     def __init__(self, starting_tile_x: int, starting_tile_y: int):
         super().__init__(starting_tile_x, starting_tile_y)
