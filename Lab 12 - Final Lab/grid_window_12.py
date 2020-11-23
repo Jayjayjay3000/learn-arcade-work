@@ -47,11 +47,11 @@ class Margins(draw.Able):
         for current_line_number in range(1, self.window.amount_of_tile_columns):
             # Drawing a vertical grid line
             draw.vertical_line(current_line_number * self.window.tile_size, 0, self.window.height,
-                               self.color, self.line_width)
+                               self.full_color, self.line_width)
         for current_line_number in range(1, self.window.amount_of_tile_rows):
             # Drawing a horizontal grid line
             draw.horizontal_line(0, self.window.width, current_line_number * self.window.tile_size,
-                                 self.color, self.line_width)
+                                 self.full_color, self.line_width)
 
     def on_draw(self):
         """

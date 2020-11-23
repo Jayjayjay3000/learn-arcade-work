@@ -69,6 +69,8 @@ class Able:
         self.size_ratio = None
         self.size = None
         self.color = None
+        self.transparency = None
+        self.full_color = None
         self.line_width = None
         self.tilt_angle = None
 
@@ -102,6 +104,9 @@ class Able:
             self.size = self.size_ratio * self.window.width
         else:
             self.size = self.size_ratio * self.window.height
+
+    def set_full_color_from_color_and_transparency(self):
+        self.full_color = tuple([current_element for current_element in self.color] + [self.transparency])
 
     def on_draw(self):
         """

@@ -61,7 +61,9 @@ class Window(draw.Window):
         """
         Updates the drawables list.
         """
-        self.drawables: list = [self.margins, self.player] + self.enemy_list
+        self.drawables: list = [self.margins] + self.enemy_list
+        if self.player.current_health > 0:
+            self.drawables.append(self.player)
 
     def on_update(self, delta_time: float):
         if self.phase_id == 0:
@@ -153,13 +155,26 @@ class Window(draw.Window):
             elif pressed_key == key.D:
                 self.player.move(3)
 
+    def on_game_over(self):
+        for current_enemy in self.enemy_list:
+            current_enemy.on_game_over()
+        self.margins.on_game_over()
+
 
 class Drawable(draw.Able):
+    INITIAL_TRANSPARENCY: int = 255
+    TRANSPARENCY_DECREASE_ON_GAME_OVER_RATIO: float = 1/2
+
     def __init__(self):
         super().__init__()
+        self.transparency: int = self.INITIAL_TRANSPARENCY
+
+    def on_game_over(self):
+        self.transparency: int = int(self.transparency * self.TRANSPARENCY_DECREASE_ON_GAME_OVER_RATIO)
+        self.set_full_color_from_color_and_transparency()
 
 
-class Margins(grid.Margins):
+class Margins(grid.Margins, Drawable):
     def __init__(self):
         super().__init__()
 
@@ -175,7 +190,7 @@ class Entity(Drawable):
     TILT_ANGLE: float = 45
 
     def get_no_on_death_command_line(self):
-        line: str = f"{self}"
+        line: str = f"Error: Entity {self} has no command on death"
         return line
 
     def get_ability_to_move_not_set_line(self):
@@ -202,7 +217,7 @@ class Entity(Drawable):
         self.can_jab = None
 
     def draw(self):
-        draw.square_outline(self.x, self.y, self.size, self.color, self.line_width, self.tilt_angle)
+        draw.square_outline(self.x, self.y, self.size, self.full_color, self.line_width, self.tilt_angle)
 
     def full_heal(self):
         self.current_health: int = self.max_health
@@ -213,10 +228,13 @@ class Entity(Drawable):
             self.die()
 
     def die(self):
+        self.current_health: int = 0
+        self.can_move: bool = False
+        self.window.update_drawables()
         if self == self.window.player:
-            pass
+            self.window.on_game_over()
         else:
-            print()
+            print(self.get_no_on_death_command_line())
             exit()
 
     def move(self, direction_id: int):
@@ -261,6 +279,7 @@ class Player(Entity):
     def __init__(self, starting_tile_x: int, starting_tile_y: int, starting_max_health: int):
         super().__init__(starting_tile_x, starting_tile_y)
         self.color = self.COLOR
+        self.set_full_color_from_color_and_transparency()
         self.max_health: int = starting_max_health
         self.full_heal()
         self.health_bar = HealthBar(self)
@@ -278,6 +297,7 @@ class Enemy(Entity):
     def __init__(self, starting_tile_x: int, starting_tile_y: int):
         super().__init__(starting_tile_x, starting_tile_y)
         self.color = self.COLOR
+        self.set_full_color_from_color_and_transparency()
 
     def get_tile_distance_to_player(self):
         player = self.window.player
@@ -364,6 +384,9 @@ class HealthBar(Drawable):
         self.size_tile_ratio = None
         self.color = self.COLOR
         self.empty_color = self.EMPTY_COLOR
+        self.set_full_color_from_color_and_transparency()
+        self.empty_full_color = None
+        self.set_empty_full_color_from_empty_color_and_transparency()
         self.line_width: float = self.WIDTH
         self.segment_distance = None
         self.segment_distance_ratio = None
@@ -378,11 +401,14 @@ class HealthBar(Drawable):
         total_segment_amount: int = self.entity.max_health
         self.segment_distance_ratio: float = 1 / (total_segment_amount + 1)
 
+    def set_segment_distance_from_ratio(self):
+        self.segment_distance: float = self.segment_distance_ratio * self.window.tile_size
+
     def set_size_tile_ratio_from_segment_distance_ratio(self):
         self.size_tile_ratio: float = self.segment_distance_ratio * 2 / 3
 
-    def set_segment_distance_from_ratio(self):
-        self.segment_distance: float = self.segment_distance_ratio * self.window.tile_size
+    def set_empty_full_color_from_empty_color_and_transparency(self):
+        self.empty_full_color = tuple([current_element for current_element in self.empty_color] + [self.transparency])
 
     def draw(self):
         total_segment_amount: int = self.entity.max_health
@@ -390,9 +416,9 @@ class HealthBar(Drawable):
             current_segment_x: float = \
                 self.x + self.segment_distance * (current_segment_number - (total_segment_amount - 1) / 2)
             if self.entity.current_health > current_segment_number:
-                current_segment_color = self.color
+                current_segment_color = self.full_color
             else:
-                current_segment_color = self.empty_color
+                current_segment_color = self.empty_full_color
             draw.cl_horizontal_line(current_segment_x, self.size, self.y, current_segment_color, self.line_width)
 
     def on_draw(self):
@@ -412,8 +438,10 @@ def execute_enemy_step(enemy_step: list):
 # Running main function
 def main():
     # Making class constants
-    margins: object = Margins()
+    margins = Margins()
     margins.color = (128, 128, 128)
+    margins.transparency = 255
+    margins.set_full_color_from_color_and_transparency()
     margins.line_width = 2
     player = Player(1, 1, 3)
 

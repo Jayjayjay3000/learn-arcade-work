@@ -20,7 +20,7 @@ def increment_hue(color, increment: float):
     :return: new color with hue incremented.
     """
     # Converting from 0 ~ 255 range to 0 ~ 1 range
-    color = tuple(x / 255 for x in color)  # *** A ***
+    color = tuple(current_element / 255 for current_element in color)  # *** A ***
 
     # Converting from RGB to HLS color
     color = rgb_to_hls(color[0], color[1], color[2])
@@ -32,7 +32,7 @@ def increment_hue(color, increment: float):
     color = hls_to_rgb(color[0], color[1], color[2])
 
     # Converting from 0 ~ 1 range to 0 ~ 255 range
-    color = tuple(x * 255 for x in color)  # *** A ***
+    color = tuple(current_element * 255 for current_element in color)  # *** A ***
 
     # Returning the new color
     return color
