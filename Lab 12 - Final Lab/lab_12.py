@@ -39,7 +39,7 @@ class Window(draw.Window):
     def create_enemy_list(self):
         for current_row_number in range(self.amount_of_tile_rows):
             for current_column_number in range(self.amount_of_tile_columns):
-                current_starting_tile_id = self.starting_tiles[current_row_number][current_column_number]
+                current_starting_tile_id: int = self.starting_tiles[current_row_number][current_column_number]
                 if current_starting_tile_id == 1:
                     current_enemy = FistsPerson(current_column_number, current_row_number)
                     current_enemy.window = self
@@ -67,8 +67,8 @@ class Window(draw.Window):
         if self.phase_id == 0:
             if self.player.has_moved:
                 self.player.has_moved = False
-                self.phase_id = 1
-                self.time_until_next_enemy_step = self.time_between_enemy_steps
+                self.phase_id: int = 1
+                self.time_until_next_enemy_step: float = self.time_between_enemy_steps
 
         elif self.phase_id == 1:
             self.time_until_next_enemy_step -= delta_time
@@ -80,9 +80,9 @@ class Window(draw.Window):
                 if len(self.possible_enemy_steps) == 0:
                     self.time_until_next_enemy_step = None
                     self.reset_enemy_step_attributes()
-                    self.phase_id = 0
+                    self.phase_id: int = 0
                 else:
-                    self.time_until_next_enemy_step = self.time_between_enemy_steps
+                    self.time_until_next_enemy_step: float = self.time_between_enemy_steps
 
         else:
             print(self.get_not_a_compatible_phase_id_line())
@@ -91,11 +91,11 @@ class Window(draw.Window):
     def update_grid_tile_array(self):
         self.grid_tiles: list = [[None] * self.amount_of_tile_columns for _ in range(self.amount_of_tile_rows)]
         for current_enemy in self.enemy_list:
-            self.grid_tiles[current_enemy.tile_y][current_enemy.tile_x] = current_enemy
-        self.grid_tiles[self.player.tile_y][self.player.tile_x] = self.player
+            self.grid_tiles[current_enemy.tile_y][current_enemy.tile_x]: object = current_enemy
+        self.grid_tiles[self.player.tile_y][self.player.tile_x]: object = self.player
 
     def update_possible_enemy_steps(self):
-        self.possible_enemy_steps = []
+        self.possible_enemy_steps: list = []
         for current_enemy in self.enemy_list:
             if current_enemy.can_move is None:
                 print(current_enemy.get_movement_not_set_line())
@@ -111,9 +111,15 @@ class Window(draw.Window):
             elif current_enemy.can_move:
                 current_enemy.has_moved = False
 
+    def get_entity(self, tile_x: int, tile_y: int):
+        if 0 <= tile_x < self.amount_of_tile_columns and 0 <= tile_y < self.amount_of_tile_rows:
+            entity: object = self.grid_tiles[tile_y][tile_x]
+        else:
+            entity: str = "OoB"
+        return entity
+
     def is_tile_empty(self, tile_x: int, tile_y: int):
-        if 0 <= tile_x < self.amount_of_tile_columns and 0 <= tile_y < self.amount_of_tile_rows \
-                and self.grid_tiles[tile_y][tile_x] is None:
+        if self.get_entity(tile_x, tile_y) is None:
             return True
         else:
             return False
@@ -122,7 +128,7 @@ class Window(draw.Window):
         closest_enemy_steps: list = []
         closest_enemy_distance_to_player = None
         for current_enemy_step in self.possible_enemy_steps:
-            current_enemy_distance_to_player = current_enemy_step[0].get_tile_distance_to_player()
+            current_enemy_distance_to_player: float = current_enemy_step[0].get_tile_distance_to_player()
             if closest_enemy_distance_to_player is None \
                     or current_enemy_distance_to_player < closest_enemy_distance_to_player:
                 closest_enemy_steps: list = [current_enemy_step]
@@ -130,7 +136,7 @@ class Window(draw.Window):
             elif current_enemy_distance_to_player == closest_enemy_distance_to_player:
                 closest_enemy_steps.append(current_enemy_step)
 
-        chosen_enemy_step = np.random_element_from_list(closest_enemy_steps)
+        chosen_enemy_step: list = np.random_element_from_list(closest_enemy_steps)
         return chosen_enemy_step
 
     def on_key_press(self, pressed_key: int, modifiers: int):
@@ -168,6 +174,10 @@ class Entity(Drawable):
     LINE_WIDTH: float = 1
     TILT_ANGLE: float = 45
 
+    def get_no_on_death_command_line(self):
+        line: str = f"{self}"
+        return line
+
     def get_ability_to_move_not_set_line(self):
         line: str = f"Error: Entity {self}'s ability to move isn't set"
         return line
@@ -195,26 +205,38 @@ class Entity(Drawable):
         draw.square_outline(self.x, self.y, self.size, self.color, self.line_width, self.tilt_angle)
 
     def full_heal(self):
-        self.current_health = self.max_health
+        self.current_health: int = self.max_health
+
+    def damage(self, damage_amount):
+        self.current_health -= damage_amount
+        if self.current_health <= 0:
+            self.die()
+
+    def die(self):
+        if self == self.window.player:
+            pass
+        else:
+            print()
+            exit()
 
     def move(self, direction_id: int):
         if direction_id == 2:
-            resulting_tile_x = self.tile_x - 1
+            resulting_tile_x: int = self.tile_x - 1
         elif direction_id == 3:
-            resulting_tile_x = self.tile_x + 1
+            resulting_tile_x: int = self.tile_x + 1
         else:
-            resulting_tile_x = self.tile_x
+            resulting_tile_x: int = self.tile_x
 
         if direction_id == 0:
-            resulting_tile_y = self.tile_y + 1
+            resulting_tile_y: int = self.tile_y + 1
         elif direction_id == 1:
-            resulting_tile_y = self.tile_y - 1
+            resulting_tile_y: int = self.tile_y - 1
         else:
-            resulting_tile_y = self.tile_y
+            resulting_tile_y: int = self.tile_y
 
         if self.window.is_tile_empty(resulting_tile_x, resulting_tile_y):
-            self.tile_x = resulting_tile_x
-            self.tile_y = resulting_tile_y
+            self.tile_x: int = resulting_tile_x
+            self.tile_y: int = resulting_tile_y
             self.set_position_from_tile_and_offset()
             if self == self.window.player:
                 self.health_bar.update_position()
@@ -225,7 +247,8 @@ class Entity(Drawable):
             exit()
 
         elif self.can_jab:
-            pass
+            jabbed_entity = self.window.get_entity(resulting_tile_x, resulting_tile_y)
+            jabbed_entity.damage(1)
 
         self.has_moved: bool = True
 
@@ -238,7 +261,7 @@ class Player(Entity):
     def __init__(self, starting_tile_x: int, starting_tile_y: int, starting_max_health: int):
         super().__init__(starting_tile_x, starting_tile_y)
         self.color = self.COLOR
-        self.max_health = starting_max_health
+        self.max_health: int = starting_max_health
         self.full_heal()
         self.health_bar = HealthBar(self)
         self.can_move: bool = self.CAN_MOVE
@@ -258,46 +281,53 @@ class Enemy(Entity):
 
     def get_tile_distance_to_player(self):
         player = self.window.player
-        distance = np.distance_of_two_points((player.tile_x, player.tile_y), (self.tile_x, self.tile_y))
+        distance: float = np.distance_of_two_points((player.tile_x, player.tile_y), (self.tile_x, self.tile_y))
         return distance
 
     def determine_movement_direction(self):
         player = self.window.player
-        is_surrounding_tile_empty: list \
-            = [self.window.is_tile_empty(self.tile_x, self.tile_y + 1),
-               self.window.is_tile_empty(self.tile_x, self.tile_y - 1),
-               self.window.is_tile_empty(self.tile_x - 1, self.tile_y),
-               self.window.is_tile_empty(self.tile_x + 1, self.tile_y)]
+        surrounding_entities: list \
+            = [self.window.get_entity(self.tile_x, self.tile_y + 1),
+               self.window.get_entity(self.tile_x, self.tile_y - 1),
+               self.window.get_entity(self.tile_x - 1, self.tile_y),
+               self.window.get_entity(self.tile_x + 1, self.tile_y)]
+
+        if self.can_jab:
+            movement_direction_priority: list = [0, 1, 2, 3]
+            for current_movement_direction_id in movement_direction_priority:
+                if surrounding_entities[current_movement_direction_id] == player:
+                    movement_direction_id: int = current_movement_direction_id
+                    return movement_direction_id
 
         if np.greater_than_or_randomly_equal_to(player.tile_x, self.tile_x):
             if np.greater_than_or_randomly_equal_to(player.tile_y, self.tile_y):
                 if np.greater_than_or_randomly_equal_to(player.tile_x - player.tile_y, self.tile_x - self.tile_y):
-                    movement_direction_priority = [3, 0, 1, 2]
+                    movement_direction_priority: list = [3, 0, 1, 2]
                 else:
-                    movement_direction_priority = [0, 3, 2, 1]
+                    movement_direction_priority: list = [0, 3, 2, 1]
             else:
                 if np.greater_than_or_randomly_equal_to(player.tile_x + player.tile_y, self.tile_x + self.tile_y):
-                    movement_direction_priority = [3, 1, 0, 2]
+                    movement_direction_priority: list = [3, 1, 0, 2]
                 else:
-                    movement_direction_priority = [1, 3, 2, 0]
+                    movement_direction_priority: list = [1, 3, 2, 0]
         else:
             if np.greater_than_or_randomly_equal_to(player.tile_y, self.tile_y):
                 if np.greater_than_or_randomly_equal_to(player.tile_x + player.tile_y, self.tile_x + self.tile_y):
-                    movement_direction_priority = [0, 2, 3, 1]
+                    movement_direction_priority: list = [0, 2, 3, 1]
                 else:
-                    movement_direction_priority = [2, 0, 1, 3]
+                    movement_direction_priority: list = [2, 0, 1, 3]
             else:
                 if np.greater_than_or_randomly_equal_to(player.tile_x - player.tile_y, self.tile_x - self.tile_y):
-                    movement_direction_priority = [1, 2, 3, 0]
+                    movement_direction_priority: list = [1, 2, 3, 0]
                 else:
-                    movement_direction_priority = [2, 1, 0, 3]
+                    movement_direction_priority: list = [2, 1, 0, 3]
 
         for current_movement_direction_id in movement_direction_priority:
-            if is_surrounding_tile_empty[current_movement_direction_id]:
-                movement_direction_id = current_movement_direction_id
+            if surrounding_entities[current_movement_direction_id] is None:
+                movement_direction_id: int = current_movement_direction_id
                 break
         else:
-            movement_direction_id = r.randrange(0, 4)
+            movement_direction_id: int = r.randrange(0, 4)
 
         return movement_direction_id
 
@@ -346,18 +376,18 @@ class HealthBar(Drawable):
 
     def set_segment_distance_ratio_from_max_health(self):
         total_segment_amount: int = self.entity.max_health
-        self.segment_distance_ratio = 1 / (total_segment_amount + 1)
+        self.segment_distance_ratio: float = 1 / (total_segment_amount + 1)
 
     def set_size_tile_ratio_from_segment_distance_ratio(self):
-        self.size_tile_ratio = self.segment_distance_ratio * 2 / 3
+        self.size_tile_ratio: float = self.segment_distance_ratio * 2 / 3
 
     def set_segment_distance_from_ratio(self):
-        self.segment_distance = self.segment_distance_ratio * self.window.tile_size
+        self.segment_distance: float = self.segment_distance_ratio * self.window.tile_size
 
     def draw(self):
         total_segment_amount: int = self.entity.max_health
         for current_segment_number in range(total_segment_amount):
-            current_segment_x = \
+            current_segment_x: float = \
                 self.x + self.segment_distance * (current_segment_number - (total_segment_amount - 1) / 2)
             if self.entity.current_health > current_segment_number:
                 current_segment_color = self.color
@@ -372,7 +402,7 @@ class HealthBar(Drawable):
 # Defining functions
 def execute_enemy_step(enemy_step: list):
     if enemy_step[1] == 0:
-        movement_direction_id = enemy_step[0].determine_movement_direction()
+        movement_direction_id: int = enemy_step[0].determine_movement_direction()
         enemy_step[0].move(movement_direction_id)
     else:
         print(get_not_a_compatible_enemy_step_line(enemy_step))
