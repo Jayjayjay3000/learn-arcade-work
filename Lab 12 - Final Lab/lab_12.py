@@ -23,7 +23,7 @@ class Window(draw.Window):
         return line
 
     def __init__(self, tile_size: int, amount_of_tile_columns: int, amount_of_tile_rows: int,
-                 title: str, background_color):
+                 ui_height_tile_ratio: float, title: str, background_color):
         # Making the new window and setting its background color
         super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color)
         self.drawables: list = self.drawables
@@ -61,7 +61,7 @@ class Window(draw.Window):
         """
         Updates the drawables list.
         """
-        self.drawables: list = [self.margins] + self.enemy_list
+        self.drawables: list = [self.grid_lines] + self.enemy_list
         if self.player.current_health > 0:
             self.drawables.append(self.player)
 
@@ -86,7 +86,7 @@ class Window(draw.Window):
                 else:
                     self.time_until_next_enemy_step: float = self.time_between_enemy_steps
 
-        else:
+        elif self.phase_id != -1:
             print(self.get_not_a_compatible_phase_id_line())
             exit()
 
@@ -156,9 +156,10 @@ class Window(draw.Window):
                 self.player.move(3)
 
     def on_game_over(self):
+        self.phase_id = -1
         for current_enemy in self.enemy_list:
             current_enemy.on_game_over()
-        self.margins.on_game_over()
+        self.grid_lines.on_game_over()
 
 
 class Drawable(draw.Able):
@@ -174,7 +175,7 @@ class Drawable(draw.Able):
         self.set_full_color_from_color_and_transparency()
 
 
-class Margins(grid.Margins, Drawable):
+class GridLines(grid.Lines, Drawable):
     def __init__(self):
         super().__init__()
 
@@ -438,17 +439,17 @@ def execute_enemy_step(enemy_step: list):
 # Running main function
 def main():
     # Making class constants
-    margins = Margins()
-    margins.color = (128, 128, 128)
-    margins.transparency = 255
-    margins.set_full_color_from_color_and_transparency()
-    margins.line_width = 2
+    grid_lines = GridLines()
+    grid_lines.color = (128, 128, 128)
+    grid_lines.transparency = 255
+    grid_lines.set_full_color_from_color_and_transparency()
+    grid_lines.line_width = 2
     player = Player(1, 1, 3)
 
     # Making class constants for the window
-    window = Window(48, 8, 8, "Test", (0, 0, 0))
-    window.margins = margins
-    window.margins.window = window
+    window = Window(48, 8, 8, 1/2, "Test", (0, 0, 0))
+    window.grid_lines = grid_lines
+    window.grid_lines.window = window
     window.player = player
     window.player.window = window
     window.player.set_size_from_tile_ratio()

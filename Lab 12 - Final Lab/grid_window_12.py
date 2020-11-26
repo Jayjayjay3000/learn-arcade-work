@@ -23,14 +23,14 @@ class Window(Window):
         self.tile_size: int = tile_size
         self.amount_of_tile_columns: int = amount_of_tile_columns
         self.amount_of_tile_rows: int = amount_of_tile_rows
-        self.margins = None
+        self.grid_lines = None
 
         # Creating class attributes from other attributes
         super().__init__(self.amount_of_tile_columns * self.tile_size, self.amount_of_tile_rows * self.tile_size,
                          title, background_color)
 
 
-class Margins(draw.Able):
+class Lines(draw.Able):
     """
     Class for drawable grid lines.
     """
