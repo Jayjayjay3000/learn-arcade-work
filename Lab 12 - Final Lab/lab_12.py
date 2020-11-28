@@ -25,7 +25,8 @@ class Window(draw.Window):
     def __init__(self, tile_size: int, amount_of_tile_columns: int, amount_of_tile_rows: int,
                  ui_height_tile_ratio: float, title: str, background_color):
         # Making the new window and setting its background color
-        super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color)
+        super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color,
+                         0, ui_height_tile_ratio)
         self.drawables: list = self.drawables
         self.player = None
         self.enemy_list: list = []
@@ -447,7 +448,7 @@ def main():
     player = Player(1, 1, 3)
 
     # Making class constants for the window
-    window = Window(48, 8, 8, 1/2, "Test", (0, 0, 0))
+    window = Window(48, 8, 8, 2/3, "Test", (0, 0, 0))
     window.grid_lines = grid_lines
     window.grid_lines.window = window
     window.player = player

@@ -9,7 +9,8 @@ class Window(grid.Window, Window):
     Class for windows with grids you can draw on.
     """
     def __init__(self, tile_size: int, amount_of_tile_columns: int, amount_of_tile_rows: int,
-                 title: str, background_color):
+                 title: str, background_color, top_margin_width_ratio: float = 0, bottom_margin_width_ratio: float = 0,
+                 left_margin_width_ratio: float = 0, right_margin_width_ratio: float = 0):
         """
         Constructs a new window as well as set the window's background color.
 
@@ -19,7 +20,9 @@ class Window(grid.Window, Window):
         :param title: Title (appears in title bar)
         :param background_color: List of 3 or 4 bytes in RGB/RGBA format.
         """
-        super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color)
+        super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color,
+                         top_margin_width_ratio, bottom_margin_width_ratio,
+                         left_margin_width_ratio, right_margin_width_ratio)
 
 
 class Able(Able):
@@ -41,13 +44,15 @@ class Able(Able):
         """
         Sets this drawable's x-position depending on the tile it's on and it's tile offset.
         """
-        self.x: float = (self.tile_x + self.tile_x_offset_ratio) * self.window.tile_size
+        window = self.window
+        self.x: float = (self.tile_x + self.tile_x_offset_ratio) * window.tile_size + window.left_margin_width
 
     def set_y_from_tile_and_offset(self):
         """
         Sets this drawable's y-position depending on the tile it's on and it's tile offset.
         """
-        self.y: float = (self.tile_y + self.tile_y_offset_ratio) * self.window.tile_size
+        window = self.window
+        self.y: float = (self.tile_y + self.tile_y_offset_ratio) * window.tile_size + window.bottom_margin_width
 
     def set_position_from_tile_and_offset(self):
         """
