@@ -28,25 +28,14 @@ class Window(draw.Window):
         super().__init__(tile_size, amount_of_tile_columns, amount_of_tile_rows, title, background_color,
                          0, ui_height_tile_ratio)
         self.drawables: list = self.drawables
-        self.player = None
-        self.enemy_list: list = []
         self.starting_tiles = None
         self.grid_tiles = None
         self.phase_id = None
+        self.player = None
+        self.enemy_list: list = []
         self.possible_enemy_steps: list = []
         self.time_between_enemy_steps = None
         self.time_until_next_enemy_step = None
-
-    def create_enemy_list(self):
-        for current_row_number in range(self.amount_of_tile_rows):
-            for current_column_number in range(self.amount_of_tile_columns):
-                current_starting_tile_id: int = self.starting_tiles[current_row_number][current_column_number]
-                if current_starting_tile_id == 1:
-                    current_enemy = FistsPerson(current_column_number, current_row_number)
-                    current_enemy.window = self
-                    current_enemy.set_position_from_tile_and_offset()
-                    current_enemy.set_size_from_tile_ratio()
-                    self.enemy_list.append(current_enemy)
 
     def on_draw(self):
         """
@@ -69,7 +58,7 @@ class Window(draw.Window):
     def on_update(self, delta_time: float):
         if self.phase_id == 0:
             if self.player.has_moved:
-                self.player.has_moved = False
+                self.reset_enemy_step_attributes()
                 self.phase_id: int = 1
                 self.time_until_next_enemy_step: float = self.time_between_enemy_steps
 
@@ -80,9 +69,9 @@ class Window(draw.Window):
                 current_chosen_enemy_step: list = self.determine_current_enemy_step()
                 execute_enemy_step(current_chosen_enemy_step)
                 self.possible_enemy_steps.remove(current_chosen_enemy_step)
-                if len(self.possible_enemy_steps) == 0:
+                if len(self.possible_enemy_steps) == 0 and self.phase_id != -1:
                     self.time_until_next_enemy_step = None
-                    self.reset_enemy_step_attributes()
+                    self.player.reset_step_attributes()
                     self.phase_id: int = 0
                 else:
                     self.time_until_next_enemy_step: float = self.time_between_enemy_steps
@@ -97,23 +86,6 @@ class Window(draw.Window):
             self.grid_tiles[current_enemy.tile_y][current_enemy.tile_x]: object = current_enemy
         self.grid_tiles[self.player.tile_y][self.player.tile_x]: object = self.player
 
-    def update_possible_enemy_steps(self):
-        self.possible_enemy_steps: list = []
-        for current_enemy in self.enemy_list:
-            if current_enemy.can_move is None:
-                print(current_enemy.get_movement_not_set_line())
-                exit()
-            elif current_enemy.can_move and not current_enemy.has_moved:
-                self.possible_enemy_steps.append([current_enemy, 0])
-
-    def reset_enemy_step_attributes(self):
-        for current_enemy in self.enemy_list:
-            if current_enemy.can_move is None:
-                print(current_enemy.get_movement_not_set_line())
-                exit()
-            elif current_enemy.can_move:
-                current_enemy.has_moved = False
-
     def get_entity(self, tile_x: int, tile_y: int):
         if 0 <= tile_x < self.amount_of_tile_columns and 0 <= tile_y < self.amount_of_tile_rows:
             entity: object = self.grid_tiles[tile_y][tile_x]
@@ -126,6 +98,26 @@ class Window(draw.Window):
             return True
         else:
             return False
+
+    def create_enemy_list(self):
+        for current_row_number in range(self.amount_of_tile_rows):
+            for current_column_number in range(self.amount_of_tile_columns):
+                current_starting_tile_id: int = self.starting_tiles[current_row_number][current_column_number]
+                if current_starting_tile_id == 1:
+                    current_enemy = FistsPerson(current_column_number, current_row_number)
+                    current_enemy.window = self
+                    current_enemy.set_position_from_tile_and_offset()
+                    current_enemy.set_size_from_tile_ratio()
+                    self.enemy_list.append(current_enemy)
+
+    def update_possible_enemy_steps(self):
+        self.possible_enemy_steps: list = []
+        for current_enemy in self.enemy_list:
+            if current_enemy.can_move is None:
+                print(current_enemy.get_movement_not_set_line())
+                exit()
+            elif current_enemy.can_move and not current_enemy.has_moved:
+                self.possible_enemy_steps.append([current_enemy, 0])
 
     def determine_current_enemy_step(self):
         closest_enemy_steps: list = []
@@ -141,6 +133,10 @@ class Window(draw.Window):
 
         chosen_enemy_step: list = np.random_element_from_list(closest_enemy_steps)
         return chosen_enemy_step
+
+    def reset_enemy_step_attributes(self):
+        for current_enemy in self.enemy_list:
+            current_enemy.reset_step_attributes()
 
     def on_key_press(self, pressed_key: int, modifiers: int):
         if self.player.can_move is None:
@@ -271,6 +267,13 @@ class Entity(Drawable):
             jabbed_entity.damage(1)
 
         self.has_moved: bool = True
+
+    def reset_step_attributes(self):
+        if self.can_move is None:
+            print(self.get_movement_not_set_line())
+            exit()
+        elif self.can_move:
+            self.has_moved = False
 
 
 class Player(Entity):
