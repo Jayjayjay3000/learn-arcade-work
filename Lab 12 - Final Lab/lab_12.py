@@ -32,6 +32,7 @@ class Window(draw.Window):
         self.grid_tiles = None
         self.phase_id = None
         self.player = None
+        self.movement_step_bar = None
         self.enemy_list: list = []
         self.possible_enemy_steps: list = []
         self.time_between_enemy_steps = None
@@ -51,7 +52,7 @@ class Window(draw.Window):
         """
         Updates the drawables list.
         """
-        self.drawables: list = [self.grid_lines] + self.enemy_list
+        self.drawables: list = [self.grid_lines, self.movement_step_bar] + self.enemy_list
         if self.player.current_health > 0:
             self.drawables.append(self.player)
 
@@ -139,18 +140,19 @@ class Window(draw.Window):
             current_enemy.reset_step_attributes()
 
     def on_key_press(self, pressed_key: int, modifiers: int):
-        if self.player.can_move is None:
-            print(self.player.get_movement_not_set_line())
-            exit()
-        elif self.player.can_move and not self.player.has_moved and self.phase_id == 0:
-            if pressed_key == key.W:
-                self.player.move(0)
-            elif pressed_key == key.S:
-                self.player.move(1)
-            elif pressed_key == key.A:
-                self.player.move(2)
-            elif pressed_key == key.D:
-                self.player.move(3)
+        if modifiers == modifiers:
+            if self.player.can_move is None:
+                print(self.player.get_movement_not_set_line())
+                exit()
+            elif self.player.can_move and not self.player.has_moved and self.phase_id == 0:
+                if pressed_key == key.W:
+                    self.player.move(0)
+                elif pressed_key == key.S:
+                    self.player.move(1)
+                elif pressed_key == key.A:
+                    self.player.move(2)
+                elif pressed_key == key.D:
+                    self.player.move(3)
 
     def on_game_over(self):
         self.phase_id = -1
@@ -175,6 +177,33 @@ class Drawable(draw.Able):
 class GridLines(grid.Lines, Drawable):
     def __init__(self):
         super().__init__()
+
+    def on_draw(self):
+        self.draw()
+
+
+class MovementStepBar(Drawable):
+    X_RATIO = 1/6
+    Y_UI_RATIO = 1/2
+    SIZE_RATIO = 1/4
+    COLOR = (255, 255, 0)
+    WIDTH = 2
+
+    def __init__(self):
+        super().__init__()
+        self.x_ratio = self.X_RATIO
+        self.y_ui_ratio = self.Y_UI_RATIO
+        self.y = None
+        self.size_ratio = self.SIZE_RATIO
+        self.color = self.COLOR
+        self.set_full_color_from_color_and_transparency()
+        self.line_width = self.WIDTH
+
+    def set_y_from_ui_ratio(self):
+        self.y = self.y_ui_ratio * self.window.bottom_margin_width
+
+    def draw(self):
+        draw.cl_horizontal_line(self.x, self.size, self.y, self.full_color, self.line_width)
 
     def on_draw(self):
         self.draw()
@@ -448,12 +477,16 @@ def main():
     grid_lines.transparency = 255
     grid_lines.set_full_color_from_color_and_transparency()
     grid_lines.line_width = 2
+    movement_step_bar = MovementStepBar()
     player = Player(1, 1, 3)
 
     # Making class constants for the window
     window = Window(48, 8, 8, 2/3, "Test", (0, 0, 0))
     window.grid_lines = grid_lines
     window.grid_lines.window = window
+    window.starting_tiles = [[0] * window.amount_of_tile_columns for _ in range(window.amount_of_tile_rows)]
+    window.starting_tiles[6][6] = 1
+    window.starting_tiles[0][7] = 1
     window.player = player
     window.player.window = window
     window.player.set_size_from_tile_ratio()
@@ -462,9 +495,11 @@ def main():
     window.player.health_bar.set_segment_distance_from_ratio()
     window.player.health_bar.set_size_tile_ratio_from_segment_distance_ratio()
     window.player.health_bar.set_size_from_tile_ratio()
-    window.starting_tiles = [[0] * window.amount_of_tile_columns for _ in range(window.amount_of_tile_rows)]
-    window.starting_tiles[6][6] = 1
-    window.starting_tiles[0][7] = 1
+    window.movement_step_bar = movement_step_bar
+    window.movement_step_bar.window = window
+    window.movement_step_bar.set_x_from_ratio()
+    window.movement_step_bar.set_y_from_ui_ratio()
+    window.movement_step_bar.set_size_from_ratio()
     window.create_enemy_list()
     window.update_drawables()
     window.time_between_enemy_steps = .2
