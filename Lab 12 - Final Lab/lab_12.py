@@ -159,6 +159,7 @@ class Window(draw.Window):
         for current_enemy in self.enemy_list:
             current_enemy.on_game_over()
         self.grid_lines.on_game_over()
+        self.movement_step_bar.on_game_over()
 
 
 class Drawable(draw.Able):
@@ -182,11 +183,26 @@ class GridLines(grid.Lines, Drawable):
         self.draw()
 
 
-class MovementStepBar(Drawable):
+class UICounter(Drawable):
+    def __init__(self):
+        super().__init__()
+        self.empty_color = None
+        self.empty_full_color = None
+
+    def set_empty_full_color_from_empty_color_and_transparency(self):
+        self.empty_full_color = tuple([current_element for current_element in self.empty_color] + [self.transparency])
+
+    def on_game_over(self):
+        super().on_game_over()
+        self.set_empty_full_color_from_empty_color_and_transparency()
+
+
+class MovementStepBar(UICounter):
     X_RATIO = 1/6
     Y_UI_RATIO = 1/2
     SIZE_RATIO = 1/4
     COLOR = (255, 255, 0)
+    EMPTY_COLOR = (64, 64, 0)
     WIDTH = 2
 
     def __init__(self):
@@ -196,14 +212,20 @@ class MovementStepBar(Drawable):
         self.y = None
         self.size_ratio = self.SIZE_RATIO
         self.color = self.COLOR
+        self.empty_color = self.EMPTY_COLOR
         self.set_full_color_from_color_and_transparency()
+        self.set_empty_full_color_from_empty_color_and_transparency()
         self.line_width = self.WIDTH
 
     def set_y_from_ui_ratio(self):
         self.y = self.y_ui_ratio * self.window.bottom_margin_width
 
     def draw(self):
-        draw.cl_horizontal_line(self.x, self.size, self.y, self.full_color, self.line_width)
+        if not self.window.player.has_moved:
+            current_color = self.full_color
+        else:
+            current_color = self.empty_full_color
+        draw.cl_horizontal_line(self.x, self.size, self.y, current_color, self.line_width)
 
     def on_draw(self):
         self.draw()
@@ -402,7 +424,7 @@ class FistsPerson(Enemy):
         self.draw()
 
 
-class HealthBar(Drawable):
+class HealthBar(UICounter):
     TILE_X_OFFSET_RATIO: float = 1/2
     TILE_Y_OFFSET_RATIO: float = 7/8
     COLOR = (0, 255, 0)
@@ -419,7 +441,6 @@ class HealthBar(Drawable):
         self.color = self.COLOR
         self.empty_color = self.EMPTY_COLOR
         self.set_full_color_from_color_and_transparency()
-        self.empty_full_color = None
         self.set_empty_full_color_from_empty_color_and_transparency()
         self.line_width: float = self.WIDTH
         self.segment_distance = None
@@ -440,9 +461,6 @@ class HealthBar(Drawable):
 
     def set_size_tile_ratio_from_segment_distance_ratio(self):
         self.size_tile_ratio: float = self.segment_distance_ratio * 2 / 3
-
-    def set_empty_full_color_from_empty_color_and_transparency(self):
-        self.empty_full_color = tuple([current_element for current_element in self.empty_color] + [self.transparency])
 
     def draw(self):
         total_segment_amount: int = self.entity.max_health
