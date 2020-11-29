@@ -37,9 +37,9 @@ def is_prime(testing_number: int):
 
 
 def distance_of_two_points(point_a: tuple, point_b: tuple):
-    x_difference = point_b[0] - point_a[0]
-    y_difference = point_b[1] - point_a[1]
-    distance = sqrt(x_difference ** 2 + y_difference ** 2)
+    x_difference: float = point_b[0] - point_a[0]
+    y_difference: float = point_b[1] - point_a[1]
+    distance: float = sqrt(x_difference ** 2 + y_difference ** 2)
     return distance
 
 

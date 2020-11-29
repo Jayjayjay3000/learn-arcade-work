@@ -33,6 +33,7 @@ class Window(draw.Window):
         self.phase_id = None
         self.player = None
         self.movement_step_bar = None
+        self.attack_step_bar = None
         self.enemy_list: list = []
         self.possible_enemy_steps: list = []
         self.time_between_enemy_steps = None
@@ -52,13 +53,20 @@ class Window(draw.Window):
         """
         Updates the drawables list.
         """
-        self.drawables: list = [self.grid_lines, self.movement_step_bar] + self.enemy_list
+        self.drawables: list = [self.grid_lines, self.movement_step_bar, self.attack_step_bar] + self.enemy_list
         if self.player.current_health > 0:
             self.drawables.append(self.player)
 
     def on_update(self, delta_time: float):
         if self.phase_id == 0:
-            if self.player.has_moved:
+            if self.player.can_move is None or self.player.can_shoot is None:
+                if self.player.can_move is None:
+                    print(self.player.get_ability_to_move_not_set_line)
+                if self.player.can_shoot is None:
+                    print(self.player.get_ability_to_shoot_not_set_line)
+                exit()
+            if (self.player.has_moved or not self.player.can_move) \
+                    and (self.player.has_shot or not self.player.can_shoot):
                 self.reset_enemy_step_attributes()
                 self.phase_id: int = 1
                 self.time_until_next_enemy_step: float = self.time_between_enemy_steps
@@ -114,11 +122,17 @@ class Window(draw.Window):
     def update_possible_enemy_steps(self):
         self.possible_enemy_steps: list = []
         for current_enemy in self.enemy_list:
-            if current_enemy.can_move is None:
-                print(current_enemy.get_movement_not_set_line())
+            if self.player.can_move is None or self.player.can_shoot is None:
+                if self.player.can_move is None:
+                    print(self.player.get_ability_to_move_not_set_line)
+                if self.player.can_shoot is None:
+                    print(self.player.get_ability_to_shoot_not_set_line)
                 exit()
-            elif current_enemy.can_move and not current_enemy.has_moved:
+
+            if current_enemy.can_move and not current_enemy.has_moved:
                 self.possible_enemy_steps.append([current_enemy, 0])
+            if current_enemy.can_shoot and not current_enemy.has_shot:
+                self.possible_enemy_steps.append([current_enemy, 1])
 
     def determine_current_enemy_step(self):
         closest_enemy_steps: list = []
@@ -142,9 +156,9 @@ class Window(draw.Window):
     def on_key_press(self, pressed_key: int, modifiers: int):
         if modifiers == modifiers:
             if self.player.can_move is None:
-                print(self.player.get_movement_not_set_line())
+                print(self.player.get_ability_to_move_not_set_line())
                 exit()
-            elif self.player.can_move and not self.player.has_moved and self.phase_id == 0:
+            elif self.player.can_move and not self.player.has_moved:
                 if pressed_key == key.W:
                     self.player.move(0)
                 elif pressed_key == key.S:
@@ -156,10 +170,8 @@ class Window(draw.Window):
 
     def on_game_over(self):
         self.phase_id = -1
-        for current_enemy in self.enemy_list:
-            current_enemy.on_game_over()
-        self.grid_lines.on_game_over()
-        self.movement_step_bar.on_game_over()
+        for current_drawable in self.drawables:
+            current_drawable.on_game_over()
 
 
 class Drawable(draw.Able):
@@ -197,35 +209,67 @@ class UICounter(Drawable):
         self.set_empty_full_color_from_empty_color_and_transparency()
 
 
-class MovementStepBar(UICounter):
-    X_RATIO = 1/6
+class StepBar(UICounter):
     Y_UI_RATIO = 1/2
     SIZE_RATIO = 1/4
-    COLOR = (255, 255, 0)
-    EMPTY_COLOR = (64, 64, 0)
     WIDTH = 2
 
     def __init__(self):
         super().__init__()
-        self.x_ratio = self.X_RATIO
         self.y_ui_ratio = self.Y_UI_RATIO
         self.y = None
         self.size_ratio = self.SIZE_RATIO
-        self.color = self.COLOR
-        self.empty_color = self.EMPTY_COLOR
-        self.set_full_color_from_color_and_transparency()
-        self.set_empty_full_color_from_empty_color_and_transparency()
         self.line_width = self.WIDTH
 
     def set_y_from_ui_ratio(self):
         self.y = self.y_ui_ratio * self.window.bottom_margin_width
 
+
+class MovementStepBar(StepBar):
+    X_RATIO = 1/6
+    COLOR = (0, 255, 255)
+    EMPTY_COLOR = (0, 64, 64)
+
+    def __init__(self):
+        super().__init__()
+        self.x_ratio = self.X_RATIO
+        self.color = self.COLOR
+        self.empty_color = self.EMPTY_COLOR
+        self.set_full_color_from_color_and_transparency()
+        self.set_empty_full_color_from_empty_color_and_transparency()
+
     def draw(self):
-        if not self.window.player.has_moved:
-            current_color = self.full_color
-        else:
-            current_color = self.empty_full_color
-        draw.cl_horizontal_line(self.x, self.size, self.y, current_color, self.line_width)
+        if self.window.player.can_move:
+            if not self.window.player.has_moved:
+                current_color = self.full_color
+            else:
+                current_color = self.empty_full_color
+            draw.cl_horizontal_line(self.x, self.size, self.y, current_color, self.line_width)
+
+    def on_draw(self):
+        self.draw()
+
+
+class AttackStepBar(StepBar):
+    X_RATIO = 1/2
+    COLOR = (255, 255, 0)
+    EMPTY_COLOR = (64, 64, 0)
+
+    def __init__(self):
+        super().__init__()
+        self.x_ratio = self.X_RATIO
+        self.color = self.COLOR
+        self.empty_color = self.EMPTY_COLOR
+        self.set_full_color_from_color_and_transparency()
+        self.set_empty_full_color_from_empty_color_and_transparency()
+
+    def draw(self):
+        if self.window.player.can_shoot:
+            if not self.window.player.has_shot:
+                current_color = self.full_color
+            else:
+                current_color = self.empty_full_color
+            draw.cl_horizontal_line(self.x, self.size, self.y, current_color, self.line_width)
 
     def on_draw(self):
         self.draw()
@@ -250,6 +294,10 @@ class Entity(Drawable):
         line: str = f"Error: Entity {self}'s ability to jab isn't set"
         return line
 
+    def get_ability_to_shoot_not_set_line(self):
+        line: str = f"Error: Entity {self}'s ability to shoot isn't set"
+        return line
+
     def __init__(self, starting_tile_x: int, starting_tile_y: int):
         super().__init__()
         self.tile_x: int = starting_tile_x
@@ -264,6 +312,8 @@ class Entity(Drawable):
         self.can_move = None
         self.has_moved: bool = False
         self.can_jab = None
+        self.can_shoot = None
+        self.has_shot: bool = False
 
     def draw(self):
         draw.square_outline(self.x, self.y, self.size, self.full_color, self.line_width, self.tilt_angle)
@@ -279,12 +329,14 @@ class Entity(Drawable):
     def die(self):
         self.current_health: int = 0
         self.can_move: bool = False
+        self.can_jab: bool = False
+        self.can_shoot: bool = False
         self.window.update_drawables()
         if self == self.window.player:
             self.window.on_game_over()
         else:
             print(self.get_no_on_death_command_line())
-            exit()
+            quit()
 
     def move(self, direction_id: int):
         if direction_id == 2:
@@ -320,17 +372,24 @@ class Entity(Drawable):
         self.has_moved: bool = True
 
     def reset_step_attributes(self):
-        if self.can_move is None:
-            print(self.get_movement_not_set_line())
+        if self.can_move is None or self.can_shoot is None:
+            if self.can_move is None:
+                print(self.player.get_ability_to_move_not_set_line)
+            if self.can_shoot is None:
+                print(self.player.get_ability_to_shoot_not_set_line)
             exit()
-        elif self.can_move:
+
+        if self.can_move:
             self.has_moved = False
+        if self.can_shoot:
+            self.has_shot = False
 
 
 class Player(Entity):
     COLOR = (255, 255, 255)
-    CAN_MOVE: bool = True
-    CAN_JAB: bool = False
+    CAN_INITIALLY_MOVE: bool = True
+    CAN_INITIALLY_JAB: bool = False
+    CAN_INITIALLY_SHOOT: bool = False
 
     def __init__(self, starting_tile_x: int, starting_tile_y: int, starting_max_health: int):
         super().__init__(starting_tile_x, starting_tile_y)
@@ -339,8 +398,9 @@ class Player(Entity):
         self.max_health: int = starting_max_health
         self.full_heal()
         self.health_bar = HealthBar(self)
-        self.can_move: bool = self.CAN_MOVE
-        self.can_jab: bool = self.CAN_JAB
+        self.can_move: bool = self.CAN_INITIALLY_MOVE
+        self.can_jab: bool = self.CAN_INITIALLY_JAB
+        self.can_shoot: bool = self.CAN_INITIALLY_SHOOT
 
     def on_draw(self):
         self.draw()
@@ -410,15 +470,17 @@ class Enemy(Entity):
 
 class FistsPerson(Enemy):
     MAX_HEALTH: int = 1
-    CAN_MOVE: bool = True
-    CAN_JAB: bool = True
+    CAN_INITIALLY_MOVE: bool = True
+    CAN_INITIALLY_JAB: bool = True
+    CAN_INITIALLY_SHOOT: bool = False
 
     def __init__(self, starting_tile_x: int, starting_tile_y: int):
         super().__init__(starting_tile_x, starting_tile_y)
         self.max_health: int = self.MAX_HEALTH
         self.full_heal()
-        self.can_move: bool = self.CAN_MOVE
-        self.can_jab: bool = self.CAN_JAB
+        self.can_move: bool = self.CAN_INITIALLY_MOVE
+        self.can_jab: bool = self.CAN_INITIALLY_JAB
+        self.can_shoot: bool = self.CAN_INITIALLY_SHOOT
 
     def on_draw(self):
         self.draw()
@@ -465,8 +527,9 @@ class HealthBar(UICounter):
     def draw(self):
         total_segment_amount: int = self.entity.max_health
         for current_segment_number in range(total_segment_amount):
-            current_segment_x: float = \
-                self.x + self.segment_distance * (current_segment_number - (total_segment_amount - 1) / 2)
+            current_segment_offset: float = \
+                self.segment_distance * (current_segment_number - (total_segment_amount - 1) / 2)
+            current_segment_x: float = self.x + current_segment_offset
             if self.entity.current_health > current_segment_number:
                 current_segment_color = self.full_color
             else:
@@ -496,6 +559,7 @@ def main():
     grid_lines.set_full_color_from_color_and_transparency()
     grid_lines.line_width = 2
     movement_step_bar = MovementStepBar()
+    attack_step_bar = AttackStepBar()
     player = Player(1, 1, 3)
 
     # Making class constants for the window
@@ -518,6 +582,11 @@ def main():
     window.movement_step_bar.set_x_from_ratio()
     window.movement_step_bar.set_y_from_ui_ratio()
     window.movement_step_bar.set_size_from_ratio()
+    window.attack_step_bar = attack_step_bar
+    window.attack_step_bar.window = window
+    window.attack_step_bar.set_x_from_ratio()
+    window.attack_step_bar.set_y_from_ui_ratio()
+    window.attack_step_bar.set_size_from_ratio()
     window.create_enemy_list()
     window.update_drawables()
     window.time_between_enemy_steps = .2
