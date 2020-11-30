@@ -18,6 +18,8 @@ class Window(draw.Window):
     """
     Class for this lab's window.
     """
+    OUT_OF_BOUNDS_ID_NOT_SET_LINE: str = "Error: Out of bounds id isn't set"
+
     def get_not_a_compatible_phase_id_line(self):
         line: str = f"Error: {self.phase_id} is not a compatible phase id"
         return line
@@ -30,6 +32,7 @@ class Window(draw.Window):
         self.drawables: list = self.drawables
         self.starting_tiles = None
         self.grid_tiles = None
+        self.out_of_bounds_id = None
         self.phase_id = None
         self.player = None
         self.movement_step_bar = None
@@ -59,14 +62,14 @@ class Window(draw.Window):
 
     def on_update(self, delta_time: float):
         if self.phase_id == 0:
-            if self.player.can_move is None or self.player.can_shoot is None:
-                if self.player.can_move is None:
-                    print(self.player.get_ability_to_move_not_set_line)
-                if self.player.can_shoot is None:
-                    print(self.player.get_ability_to_shoot_not_set_line)
+            player = self.player
+            if player.can_move is None or player.can_shoot is None:
+                if player.can_move is None:
+                    print(player.get_ability_to_move_not_set_line)
+                if player.can_shoot is None:
+                    print(player.get_ability_to_shoot_not_set_line)
                 exit()
-            if (self.player.has_moved or not self.player.can_move) \
-                    and (self.player.has_shot or not self.player.can_shoot):
+            if (player.has_moved or not player.can_move) and (player.has_shot or not player.can_shoot):
                 self.reset_enemy_step_attributes()
                 self.phase_id: int = 1
                 self.time_until_next_enemy_step: float = self.time_between_enemy_steps
@@ -99,7 +102,10 @@ class Window(draw.Window):
         if 0 <= tile_x < self.amount_of_tile_columns and 0 <= tile_y < self.amount_of_tile_rows:
             entity: object = self.grid_tiles[tile_y][tile_x]
         else:
-            entity: str = "OoB"
+            if self.out_of_bounds_id is None:
+                print(self.OUT_OF_BOUNDS_ID_NOT_SET_LINE)
+                exit()
+            entity: str = self.out_of_bounds_id
         return entity
 
     def is_tile_empty(self, tile_x: int, tile_y: int):
@@ -152,6 +158,13 @@ class Window(draw.Window):
     def reset_enemy_step_attributes(self):
         for current_enemy in self.enemy_list:
             current_enemy.reset_step_attributes()
+
+    def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
+        if self.player.can_shoot is None:
+            print(self.player.get_ability_to_shoot_not_set_line())
+            exit()
+        elif self.player.can_shoot and not self.player.has_shot:
+            self.player.shoot()
 
     def on_key_press(self, pressed_key: int, modifiers: int):
         if modifiers == modifiers:
@@ -281,6 +294,8 @@ class Entity(Drawable):
     SIZE_TILE_RATIO: float = 1/3
     LINE_WIDTH: float = 1
     TILT_ANGLE: float = 45
+    INITIAL_JAB_DAMAGE: int = 1
+    INITIAL_SHOT_DAMAGE: int = 1
 
     def get_no_on_death_command_line(self):
         line: str = f"Error: Entity {self} has no command on death"
@@ -312,8 +327,10 @@ class Entity(Drawable):
         self.can_move = None
         self.has_moved: bool = False
         self.can_jab = None
+        self.jab_damage = self.INITIAL_JAB_DAMAGE
         self.can_shoot = None
         self.has_shot: bool = False
+        self.shot_damage = self.INITIAL_SHOT_DAMAGE
 
     def draw(self):
         draw.square_outline(self.x, self.y, self.size, self.full_color, self.line_width, self.tilt_angle)
@@ -367,9 +384,24 @@ class Entity(Drawable):
 
         elif self.can_jab:
             jabbed_entity = self.window.get_entity(resulting_tile_x, resulting_tile_y)
-            jabbed_entity.damage(1)
+            if jabbed_entity != self.window.out_of_bounds_id:
+                jabbed_entity.damage(self.jab_damage)
 
         self.has_moved: bool = True
+
+    def shoot(self):
+        shot_tile_x: int = self.tile_x
+        shot_tile_y: int = self.tile_y
+
+        while True:
+            shot_tile_x += 1
+            if not self.window.is_tile_empty(shot_tile_x, shot_tile_y):
+                break
+        shot_entity = self.window.get_entity(shot_tile_x, shot_tile_y)
+        if shot_entity != self.window.out_of_bounds_id:
+            shot_entity.damage(self.shot_damage)
+
+        self.has_shot: bool = True
 
     def reset_step_attributes(self):
         if self.can_move is None or self.can_shoot is None:
@@ -389,7 +421,7 @@ class Player(Entity):
     COLOR = (255, 255, 255)
     CAN_INITIALLY_MOVE: bool = True
     CAN_INITIALLY_JAB: bool = False
-    CAN_INITIALLY_SHOOT: bool = False
+    CAN_INITIALLY_SHOOT: bool = True
 
     def __init__(self, starting_tile_x: int, starting_tile_y: int, starting_max_health: int):
         super().__init__(starting_tile_x, starting_tile_y)
@@ -421,12 +453,11 @@ class Enemy(Entity):
         return distance
 
     def determine_movement_direction(self):
-        player = self.window.player
+        window = self.window
+        player = window.player
         surrounding_entities: list \
-            = [self.window.get_entity(self.tile_x, self.tile_y + 1),
-               self.window.get_entity(self.tile_x, self.tile_y - 1),
-               self.window.get_entity(self.tile_x - 1, self.tile_y),
-               self.window.get_entity(self.tile_x + 1, self.tile_y)]
+            = [window.get_entity(self.tile_x, self.tile_y + 1), window.get_entity(self.tile_x, self.tile_y - 1),
+               window.get_entity(self.tile_x - 1, self.tile_y), window.get_entity(self.tile_x + 1, self.tile_y)]
 
         if self.can_jab:
             movement_direction_priority: list = [0, 1, 2, 3]
@@ -489,6 +520,7 @@ class FistsPerson(Enemy):
 class HealthBar(UICounter):
     TILE_X_OFFSET_RATIO: float = 1/2
     TILE_Y_OFFSET_RATIO: float = 7/8
+    SIZE_SEGMENT_DISTANCE_RATIO: float = 2/3
     COLOR = (0, 255, 0)
     EMPTY_COLOR = (96, 32, 32)
     WIDTH: float = 2
@@ -500,6 +532,7 @@ class HealthBar(UICounter):
         self.tile_y = None
         self.tile_y_offset_ratio: float = self.TILE_Y_OFFSET_RATIO
         self.size_tile_ratio = None
+        self.size_segment_distance_ratio = self.SIZE_SEGMENT_DISTANCE_RATIO
         self.color = self.COLOR
         self.empty_color = self.EMPTY_COLOR
         self.set_full_color_from_color_and_transparency()
@@ -522,13 +555,13 @@ class HealthBar(UICounter):
         self.segment_distance: float = self.segment_distance_ratio * self.window.tile_size
 
     def set_size_tile_ratio_from_segment_distance_ratio(self):
-        self.size_tile_ratio: float = self.segment_distance_ratio * 2 / 3
+        self.size_tile_ratio: float = self.size_segment_distance_ratio * self.segment_distance_ratio
 
     def draw(self):
         total_segment_amount: int = self.entity.max_health
         for current_segment_number in range(total_segment_amount):
-            current_segment_offset: float = \
-                self.segment_distance * (current_segment_number - (total_segment_amount - 1) / 2)
+            current_segment_offset: float \
+                = self.segment_distance * (current_segment_number - (total_segment_amount - 1) / 2)
             current_segment_x: float = self.x + current_segment_offset
             if self.entity.current_health > current_segment_number:
                 current_segment_color = self.full_color
@@ -569,6 +602,7 @@ def main():
     window.starting_tiles = [[0] * window.amount_of_tile_columns for _ in range(window.amount_of_tile_rows)]
     window.starting_tiles[6][6] = 1
     window.starting_tiles[0][7] = 1
+    window.out_of_bounds_id = "OoB"
     window.player = player
     window.player.window = window
     window.player.set_size_from_tile_ratio()
