@@ -1,4 +1,5 @@
 # Importing libraries
+from arcade import MOUSE_BUTTON_LEFT
 from arcade import key
 from arcade import run
 import random as r
@@ -70,9 +71,12 @@ class Window(draw.Window):
                     print(player.get_ability_to_shoot_not_set_line)
                 exit()
             if (player.has_moved or not player.can_move) and (player.has_shot or not player.can_shoot):
-                self.reset_enemy_step_attributes()
-                self.phase_id: int = 1
-                self.time_until_next_enemy_step: float = self.time_between_enemy_steps
+                if self.enemy_list:
+                    self.reset_enemy_step_attributes()
+                    self.phase_id: int = 1
+                    self.time_until_next_enemy_step: float = self.time_between_enemy_steps
+                else:
+                    self.player.reset_step_attributes()
 
         elif self.phase_id == 1:
             self.time_until_next_enemy_step -= delta_time
@@ -123,6 +127,12 @@ class Window(draw.Window):
                     current_enemy.window = self
                     current_enemy.set_position_from_tile_and_offset()
                     current_enemy.set_size_from_tile_ratio()
+                    current_enemy.health_bar.window = self
+                    current_enemy.health_bar.update_position()
+                    current_enemy.health_bar.set_segment_distance_ratio_from_max_health()
+                    current_enemy.health_bar.set_segment_distance_from_ratio()
+                    current_enemy.health_bar.set_size_tile_ratio_from_segment_distance_ratio()
+                    current_enemy.health_bar.set_size_from_tile_ratio()
                     self.enemy_list.append(current_enemy)
 
     def update_possible_enemy_steps(self):
@@ -163,8 +173,9 @@ class Window(draw.Window):
         if self.player.can_shoot is None:
             print(self.player.get_ability_to_shoot_not_set_line())
             exit()
-        elif self.player.can_shoot and not self.player.has_shot:
-            self.player.shoot()
+        elif button == MOUSE_BUTTON_LEFT:
+            if self.player.can_shoot and not self.player.has_shot:
+                self.player.shoot()
 
     def on_key_press(self, pressed_key: int, modifiers: int):
         if modifiers == modifiers:
@@ -183,6 +194,7 @@ class Window(draw.Window):
 
     def on_game_over(self):
         self.phase_id = -1
+        self.window.update_drawables()
         for current_drawable in self.drawables:
             current_drawable.on_game_over()
 
@@ -324,6 +336,7 @@ class Entity(Drawable):
         self.tilt_angle: float = self.TILT_ANGLE
         self.max_health = None
         self.current_health = None
+        self.health_bar = HealthBar(self)
         self.can_move = None
         self.has_moved: bool = False
         self.can_jab = None
@@ -348,12 +361,12 @@ class Entity(Drawable):
         self.can_move: bool = False
         self.can_jab: bool = False
         self.can_shoot: bool = False
-        self.window.update_drawables()
         if self == self.window.player:
             self.window.on_game_over()
         else:
-            print(self.get_no_on_death_command_line())
-            quit()
+            self.window.enemy_list.remove(self)
+            self.window.update_drawables()
+            self.window.update_grid_tile_array()
 
     def move(self, direction_id: int):
         if direction_id == 2:
@@ -374,8 +387,7 @@ class Entity(Drawable):
             self.tile_x: int = resulting_tile_x
             self.tile_y: int = resulting_tile_y
             self.set_position_from_tile_and_offset()
-            if self == self.window.player:
-                self.health_bar.update_position()
+            self.health_bar.update_position()
             self.window.update_grid_tile_array()
 
         elif self.can_jab is None:
@@ -429,7 +441,6 @@ class Player(Entity):
         self.set_full_color_from_color_and_transparency()
         self.max_health: int = starting_max_health
         self.full_heal()
-        self.health_bar = HealthBar(self)
         self.can_move: bool = self.CAN_INITIALLY_MOVE
         self.can_jab: bool = self.CAN_INITIALLY_JAB
         self.can_shoot: bool = self.CAN_INITIALLY_SHOOT
@@ -515,6 +526,7 @@ class FistsPerson(Enemy):
 
     def on_draw(self):
         self.draw()
+        self.health_bar.draw()
 
 
 class HealthBar(UICounter):
