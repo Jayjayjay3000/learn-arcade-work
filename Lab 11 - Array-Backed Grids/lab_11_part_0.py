@@ -48,13 +48,6 @@ class Window(draw.Window):
                     cell_selection_list.append(cell_selection)
         self.drawables: list = cell_selection_list + [self.margins]
 
-    def on_mouse_press(self, mouse_x: int, mouse_y: int, mouse_button: int, modifiers: int):
-        if mouse_button == MOUSE_BUTTON_LEFT:
-            mouse_tile_x: int = mouse_x // self.tile_size
-            mouse_tile_y: int = (mouse_y - 1) // self.tile_size
-            self.change_tile(mouse_tile_x, mouse_tile_y)
-            self.update_drawables()
-
     def change_tile(self, tile_x: int, tile_y: int):
         if 0 <= tile_x < self.amount_of_tile_columns and 0 <= tile_y < self.amount_of_tile_rows:
             if self.selected_tiles[tile_y][tile_x] == 0:
@@ -64,6 +57,14 @@ class Window(draw.Window):
             else:
                 print(self.NOT_A_TILE_ID_LINE)
                 exit()
+
+    def on_mouse_press(self, mouse_x: int, mouse_y: int, mouse_button: int, modifiers: int):
+        if modifiers == modifiers:
+            if mouse_button == MOUSE_BUTTON_LEFT:
+                mouse_tile_x: int = mouse_x // self.tile_size
+                mouse_tile_y: int = (mouse_y - 1) // self.tile_size
+                self.change_tile(mouse_tile_x, mouse_tile_y)
+                self.update_drawables()
 
 
 class Drawable(draw.Able):

@@ -7,8 +7,20 @@ import numpyplus_12 as np
 import grid_window_12 as grid
 import draw_on_grid_12 as draw
 
+# Making constants
+NULL_DIRECTION = -1
+UP_DIRECTION = 0
+DOWN_DIRECTION = 1
+LEFT_DIRECTION = 2
+RIGHT_DIRECTION = 3
+
 
 # Defining get text functions
+def get_not_a_compatible_direction_id_line(direction_id: int):
+    line: str = f"Error: {direction_id} is not a compatible direction id"
+    return line
+
+
 def get_not_a_compatible_enemy_step_line(enemy_step):
     line: str = f"Error: {enemy_step} is not a compatible enemy step"
     return line
@@ -61,6 +73,87 @@ class Window(draw.Window):
         if self.player.current_health > 0:
             self.drawables.append(self.player)
 
+    def create_enemy_list(self):
+        for current_row_number in range(self.amount_of_tile_rows):
+            for current_column_number in range(self.amount_of_tile_columns):
+                current_starting_tile_id: int = self.starting_tiles[current_row_number][current_column_number]
+                if current_starting_tile_id == 1:
+                    current_enemy = FistsPerson(current_column_number, current_row_number)
+                    current_enemy.window = self
+                    current_enemy.set_position_from_tile_and_offset()
+                    current_enemy.set_size_from_tile_ratio()
+                    current_enemy.health_bar.window = self
+                    current_enemy.health_bar.update_position()
+                    current_enemy.health_bar.set_segment_distance_ratio_from_max_health()
+                    current_enemy.health_bar.set_segment_distance_from_ratio()
+                    current_enemy.health_bar.set_size_tile_ratio_from_segment_distance_ratio()
+                    current_enemy.health_bar.set_size_from_tile_ratio()
+                    self.enemy_list.append(current_enemy)
+
+    def is_an_enemy(self, entity: object):
+        if np.linear_search_through_list(entity, self.enemy_list)[0]:
+            return True
+        return False
+
+    def update_grid_tile_array(self):
+        self.grid_tiles: list = [[None] * self.amount_of_tile_columns for _ in range(self.amount_of_tile_rows)]
+        for current_enemy in self.enemy_list:
+            self.grid_tiles[current_enemy.tile_y][current_enemy.tile_x]: object = current_enemy
+        self.grid_tiles[self.player.tile_y][self.player.tile_x]: object = self.player
+
+    def get_entity(self, tile_x: int, tile_y: int):
+        if 0 <= tile_x < self.amount_of_tile_columns and 0 <= tile_y < self.amount_of_tile_rows:
+            entity: object = self.grid_tiles[tile_y][tile_x]
+        else:
+            if self.out_of_bounds_id is None:
+                print(self.OUT_OF_BOUNDS_ID_NOT_SET_LINE)
+                exit()
+            entity: str = self.out_of_bounds_id
+        return entity
+
+    def is_tile_empty(self, tile_x: int, tile_y: int):
+        if self.get_entity(tile_x, tile_y) is None:
+            return True
+        return False
+
+    def reset_enemy_step_attributes(self):
+        for current_enemy in self.enemy_list:
+            current_enemy.reset_step_attributes()
+
+    def update_possible_enemy_steps(self):
+        self.possible_enemy_steps: list = []
+        for current_enemy in self.enemy_list:
+            if self.player.can_move is None or self.player.can_shoot is None:
+                if self.player.can_move is None:
+                    print(self.player.get_ability_to_move_not_set_line)
+                if self.player.can_shoot is None:
+                    print(self.player.get_ability_to_shoot_not_set_line)
+                exit()
+
+            if current_enemy.can_move and not current_enemy.has_moved:
+                self.possible_enemy_steps.append([current_enemy, 0])
+            if current_enemy.can_shoot and not current_enemy.has_shot:
+                self.possible_enemy_steps.append([current_enemy, 1])
+
+    def determine_closest_enemy_steps(self):
+        closest_enemy_steps: list = []
+        closest_enemy_distance_to_player = None
+        for current_enemy_step in self.possible_enemy_steps:
+            current_enemy_distance_to_player: float = current_enemy_step[0].get_tile_distance_to_player()
+            if closest_enemy_distance_to_player is None \
+                    or current_enemy_distance_to_player < closest_enemy_distance_to_player:
+                closest_enemy_steps: list = [current_enemy_step]
+                closest_enemy_distance_to_player = current_enemy_distance_to_player
+            elif current_enemy_distance_to_player == closest_enemy_distance_to_player:
+                closest_enemy_steps.append(current_enemy_step)
+
+        return closest_enemy_steps
+
+    def determine_current_enemy_step(self):
+        closest_enemy_steps = self.determine_closest_enemy_steps()
+        chosen_enemy_step: list = np.random_element_from_list(closest_enemy_steps)
+        return chosen_enemy_step
+
     def on_update(self, delta_time: float):
         if self.phase_id == 0:
             player = self.player
@@ -85,7 +178,7 @@ class Window(draw.Window):
                 current_chosen_enemy_step: list = self.determine_current_enemy_step()
                 execute_enemy_step(current_chosen_enemy_step)
                 self.possible_enemy_steps.remove(current_chosen_enemy_step)
-                if len(self.possible_enemy_steps) == 0 and self.phase_id != -1:
+                if self.possible_enemy_steps == [] and self.phase_id != -1:
                     self.time_until_next_enemy_step = None
                     self.player.reset_step_attributes()
                     self.phase_id: int = 0
@@ -96,105 +189,49 @@ class Window(draw.Window):
             print(self.get_not_a_compatible_phase_id_line())
             exit()
 
-    def update_grid_tile_array(self):
-        self.grid_tiles: list = [[None] * self.amount_of_tile_columns for _ in range(self.amount_of_tile_rows)]
-        for current_enemy in self.enemy_list:
-            self.grid_tiles[current_enemy.tile_y][current_enemy.tile_x]: object = current_enemy
-        self.grid_tiles[self.player.tile_y][self.player.tile_x]: object = self.player
+    def on_mouse_press(self, mouse_x: float, mouse_y: float, mouse_button: int, modifiers: int):
+        if modifiers == modifiers:
+            mouse_tile_x: int = mouse_x // self.tile_size
+            if mouse_y <= self.bottom_margin_width:
+                mouse_tile_y: str = self.out_of_bounds_id
+            else:
+                mouse_tile_y: int = (mouse_y - self.bottom_margin_width - 1) // self.tile_size
 
-    def get_entity(self, tile_x: int, tile_y: int):
-        if 0 <= tile_x < self.amount_of_tile_columns and 0 <= tile_y < self.amount_of_tile_rows:
-            entity: object = self.grid_tiles[tile_y][tile_x]
-        else:
-            if self.out_of_bounds_id is None:
-                print(self.OUT_OF_BOUNDS_ID_NOT_SET_LINE)
-                exit()
-            entity: str = self.out_of_bounds_id
-        return entity
-
-    def is_tile_empty(self, tile_x: int, tile_y: int):
-        if self.get_entity(tile_x, tile_y) is None:
-            return True
-        else:
-            return False
-
-    def create_enemy_list(self):
-        for current_row_number in range(self.amount_of_tile_rows):
-            for current_column_number in range(self.amount_of_tile_columns):
-                current_starting_tile_id: int = self.starting_tiles[current_row_number][current_column_number]
-                if current_starting_tile_id == 1:
-                    current_enemy = FistsPerson(current_column_number, current_row_number)
-                    current_enemy.window = self
-                    current_enemy.set_position_from_tile_and_offset()
-                    current_enemy.set_size_from_tile_ratio()
-                    current_enemy.health_bar.window = self
-                    current_enemy.health_bar.update_position()
-                    current_enemy.health_bar.set_segment_distance_ratio_from_max_health()
-                    current_enemy.health_bar.set_segment_distance_from_ratio()
-                    current_enemy.health_bar.set_size_tile_ratio_from_segment_distance_ratio()
-                    current_enemy.health_bar.set_size_from_tile_ratio()
-                    self.enemy_list.append(current_enemy)
-
-    def update_possible_enemy_steps(self):
-        self.possible_enemy_steps: list = []
-        for current_enemy in self.enemy_list:
-            if self.player.can_move is None or self.player.can_shoot is None:
-                if self.player.can_move is None:
-                    print(self.player.get_ability_to_move_not_set_line)
-                if self.player.can_shoot is None:
-                    print(self.player.get_ability_to_shoot_not_set_line)
+            if self.player.can_shoot is None:
+                print(self.player.get_ability_to_shoot_not_set_line())
                 exit()
 
-            if current_enemy.can_move and not current_enemy.has_moved:
-                self.possible_enemy_steps.append([current_enemy, 0])
-            if current_enemy.can_shoot and not current_enemy.has_shot:
-                self.possible_enemy_steps.append([current_enemy, 1])
-
-    def determine_current_enemy_step(self):
-        closest_enemy_steps: list = []
-        closest_enemy_distance_to_player = None
-        for current_enemy_step in self.possible_enemy_steps:
-            current_enemy_distance_to_player: float = current_enemy_step[0].get_tile_distance_to_player()
-            if closest_enemy_distance_to_player is None \
-                    or current_enemy_distance_to_player < closest_enemy_distance_to_player:
-                closest_enemy_steps: list = [current_enemy_step]
-                closest_enemy_distance_to_player = current_enemy_distance_to_player
-            elif current_enemy_distance_to_player == closest_enemy_distance_to_player:
-                closest_enemy_steps.append(current_enemy_step)
-
-        chosen_enemy_step: list = np.random_element_from_list(closest_enemy_steps)
-        return chosen_enemy_step
-
-    def reset_enemy_step_attributes(self):
-        for current_enemy in self.enemy_list:
-            current_enemy.reset_step_attributes()
-
-    def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
-        if self.player.can_shoot is None:
-            print(self.player.get_ability_to_shoot_not_set_line())
-            exit()
-        elif button == MOUSE_BUTTON_LEFT:
-            if self.player.can_shoot and not self.player.has_shot:
-                self.player.shoot()
+            elif mouse_button == MOUSE_BUTTON_LEFT:
+                if self.player.can_shoot and not self.player.has_shot:
+                    is_mouse_tile_aligned_with_player, player_direction_id \
+                        = self.player.is_aligned_with_tile(mouse_tile_x, mouse_tile_y)
+                    if is_mouse_tile_aligned_with_player and player_direction_id != NULL_DIRECTION:
+                        self.player.shoot(player_direction_id)
+                    else:
+                        print("Not a place you can shoot at")
 
     def on_key_press(self, pressed_key: int, modifiers: int):
         if modifiers == modifiers:
             if self.player.can_move is None:
                 print(self.player.get_ability_to_move_not_set_line())
                 exit()
+
+            elif pressed_key == key.SPACE:
+                self.player.reset_step_attributes(True)
+
             elif self.player.can_move and not self.player.has_moved:
                 if pressed_key == key.W:
-                    self.player.move(0)
+                    self.player.move(UP_DIRECTION)
                 elif pressed_key == key.S:
-                    self.player.move(1)
+                    self.player.move(DOWN_DIRECTION)
                 elif pressed_key == key.A:
-                    self.player.move(2)
+                    self.player.move(LEFT_DIRECTION)
                 elif pressed_key == key.D:
-                    self.player.move(3)
+                    self.player.move(RIGHT_DIRECTION)
 
     def on_game_over(self):
         self.phase_id = -1
-        self.window.update_drawables()
+        self.update_drawables()
         for current_drawable in self.drawables:
             current_drawable.on_game_over()
 
@@ -351,11 +388,6 @@ class Entity(Drawable):
     def full_heal(self):
         self.current_health: int = self.max_health
 
-    def damage(self, damage_amount):
-        self.current_health -= damage_amount
-        if self.current_health <= 0:
-            self.die()
-
     def die(self):
         self.current_health: int = 0
         self.can_move: bool = False
@@ -368,20 +400,15 @@ class Entity(Drawable):
             self.window.update_drawables()
             self.window.update_grid_tile_array()
 
-    def move(self, direction_id: int):
-        if direction_id == 2:
-            resulting_tile_x: int = self.tile_x - 1
-        elif direction_id == 3:
-            resulting_tile_x: int = self.tile_x + 1
-        else:
-            resulting_tile_x: int = self.tile_x
+    def damage(self, damage_amount):
+        self.current_health -= damage_amount
+        if self.current_health <= 0:
+            self.die()
 
-        if direction_id == 0:
-            resulting_tile_y: int = self.tile_y + 1
-        elif direction_id == 1:
-            resulting_tile_y: int = self.tile_y - 1
-        else:
-            resulting_tile_y: int = self.tile_y
+    def move(self, direction_id: int):
+        x_direction, y_direction = get_coordinates_from_direction_id(direction_id)
+        resulting_tile_x: int = self.tile_x + x_direction
+        resulting_tile_y: int = self.tile_y + y_direction
 
         if self.window.is_tile_empty(resulting_tile_x, resulting_tile_y):
             self.tile_x: int = resulting_tile_x
@@ -401,12 +428,14 @@ class Entity(Drawable):
 
         self.has_moved: bool = True
 
-    def shoot(self):
+    def shoot(self, direction_id: int):
         shot_tile_x: int = self.tile_x
         shot_tile_y: int = self.tile_y
+        x_direction, y_direction = get_coordinates_from_direction_id(direction_id)
 
         while True:
-            shot_tile_x += 1
+            shot_tile_x += x_direction
+            shot_tile_y += y_direction
             if not self.window.is_tile_empty(shot_tile_x, shot_tile_y):
                 break
         shot_entity = self.window.get_entity(shot_tile_x, shot_tile_y)
@@ -415,7 +444,7 @@ class Entity(Drawable):
 
         self.has_shot: bool = True
 
-    def reset_step_attributes(self):
+    def reset_step_attributes(self, reset_state: bool = False):
         if self.can_move is None or self.can_shoot is None:
             if self.can_move is None:
                 print(self.player.get_ability_to_move_not_set_line)
@@ -424,9 +453,13 @@ class Entity(Drawable):
             exit()
 
         if self.can_move:
-            self.has_moved = False
+            self.has_moved = reset_state
         if self.can_shoot:
-            self.has_shot = False
+            self.has_shot = reset_state
+
+    def on_game_over(self):
+        super().on_game_over()
+        self.health_bar.on_game_over()
 
 
 class Player(Entity):
@@ -449,6 +482,23 @@ class Player(Entity):
         self.draw()
         self.health_bar.on_draw()
 
+    def is_aligned_with_tile(self, other_tile_x: int, other_tile_y: int):
+        if other_tile_x == self.tile_x or other_tile_y == self.tile_y:
+            if other_tile_x == self.tile_x:
+                if other_tile_y > self.tile_y:
+                    return True, UP_DIRECTION
+                elif other_tile_y < self.tile_y:
+                    return True, DOWN_DIRECTION
+                return True, NULL_DIRECTION
+            elif other_tile_x < self.tile_x:
+                return True, LEFT_DIRECTION
+            return True, RIGHT_DIRECTION
+        return False, None
+
+    def get_distance_from_tile(self, other_tile_x: int, other_tile_y: int):
+        distance: float = np.distance_of_two_points((self.tile_x, self.tile_y), (other_tile_x, other_tile_y))
+        return distance
+
 
 class Enemy(Entity):
     COLOR = (255, 0, 0)
@@ -459,53 +509,50 @@ class Enemy(Entity):
         self.set_full_color_from_color_and_transparency()
 
     def get_tile_distance_to_player(self):
-        player = self.window.player
-        distance: float = np.distance_of_two_points((player.tile_x, player.tile_y), (self.tile_x, self.tile_y))
+        distance: float = self.window.player.get_distance_from_tile(self.tile_x, self.tile_y)
         return distance
 
     def determine_movement_direction(self):
         window = self.window
         player = window.player
+        surrounding_tile_x_offsets: list \
+            = [get_coordinates_from_direction_id(current_direction_id)[0] for current_direction_id in range(4)]
+        surrounding_tile_y_offsets: list \
+            = [get_coordinates_from_direction_id(current_direction_id)[1] for current_direction_id in range(4)]
+        surrounding_tile_x_values: list \
+            = [self.tile_x + current_offset for current_offset in surrounding_tile_x_offsets]
+        surrounding_tile_y_values: list \
+            = [self.tile_y + current_offset for current_offset in surrounding_tile_y_offsets]
         surrounding_entities: list \
-            = [window.get_entity(self.tile_x, self.tile_y + 1), window.get_entity(self.tile_x, self.tile_y - 1),
-               window.get_entity(self.tile_x - 1, self.tile_y), window.get_entity(self.tile_x + 1, self.tile_y)]
+            = [window.get_entity(surrounding_tile_x_values[current_direction_id],
+                                 surrounding_tile_y_values[current_direction_id]) for current_direction_id in range(4)]
 
-        if self.can_jab:
-            movement_direction_priority: list = [0, 1, 2, 3]
-            for current_movement_direction_id in movement_direction_priority:
-                if surrounding_entities[current_movement_direction_id] == player:
-                    movement_direction_id: int = current_movement_direction_id
-                    return movement_direction_id
+        surrounding_distances_to_player: list \
+            = [(player.get_distance_from_tile(surrounding_tile_x_values[current_direction_id],
+                                              surrounding_tile_y_values[current_direction_id]), current_direction_id)
+               for current_direction_id in range(4)]
+        surrounding_distances_to_player: list \
+            = np.sort_meta_list_by_element_of_sub_list(surrounding_distances_to_player)
+        movement_direction_priority: list = np.get_lateral_sub_list(surrounding_distances_to_player, 1)
 
-        if np.greater_than_or_randomly_equal_to(player.tile_x, self.tile_x):
-            if np.greater_than_or_randomly_equal_to(player.tile_y, self.tile_y):
-                if np.greater_than_or_randomly_equal_to(player.tile_x - player.tile_y, self.tile_x - self.tile_y):
-                    movement_direction_priority: list = [3, 0, 1, 2]
-                else:
-                    movement_direction_priority: list = [0, 3, 2, 1]
+        for current_direction_id in range(4):
+            current_entity: object = surrounding_entities[current_direction_id]
+            if window.is_an_enemy(current_entity) or current_entity == window.out_of_bounds_id:
+                movement_direction_priority.remove(current_direction_id)
+
+        if len(movement_direction_priority) == 4:
+            for current_movement_direction_priority in range(2):
+                current_direction_id: int = movement_direction_priority[current_movement_direction_priority]
+                current_entity: object = surrounding_entities[current_direction_id]
+                if current_entity is None or current_entity == player:
+                    movement_direction_id: int = current_direction_id
+                    break
             else:
-                if np.greater_than_or_randomly_equal_to(player.tile_x + player.tile_y, self.tile_x + self.tile_y):
-                    movement_direction_priority: list = [3, 1, 0, 2]
-                else:
-                    movement_direction_priority: list = [1, 3, 2, 0]
+                movement_direction_id: int = movement_direction_priority[0]
+        elif not movement_direction_priority:
+            movement_direction_id: int = r.randrange(4)
         else:
-            if np.greater_than_or_randomly_equal_to(player.tile_y, self.tile_y):
-                if np.greater_than_or_randomly_equal_to(player.tile_x + player.tile_y, self.tile_x + self.tile_y):
-                    movement_direction_priority: list = [0, 2, 3, 1]
-                else:
-                    movement_direction_priority: list = [2, 0, 1, 3]
-            else:
-                if np.greater_than_or_randomly_equal_to(player.tile_x - player.tile_y, self.tile_x - self.tile_y):
-                    movement_direction_priority: list = [1, 2, 3, 0]
-                else:
-                    movement_direction_priority: list = [2, 1, 0, 3]
-
-        for current_movement_direction_id in movement_direction_priority:
-            if surrounding_entities[current_movement_direction_id] is None:
-                movement_direction_id: int = current_movement_direction_id
-                break
-        else:
-            movement_direction_id: int = r.randrange(0, 4)
+            movement_direction_id: int = movement_direction_priority[0]
 
         return movement_direction_id
 
@@ -586,7 +633,40 @@ class HealthBar(UICounter):
 
 
 # Defining functions
+def get_coordinates_from_direction_id(direction_id: int):
+    """
+
+
+    :param direction_id:
+    :return:
+    """
+    if direction_id == LEFT_DIRECTION:
+        x: int = -1
+    elif direction_id == RIGHT_DIRECTION:
+        x: int = 1
+    else:
+        x: int = 0
+
+    if direction_id == UP_DIRECTION:
+        y: int = 1
+    elif direction_id == DOWN_DIRECTION:
+        y: int = -1
+    else:
+        y: int = 0
+
+    if x == 0 and y == 0:
+        print(get_not_a_compatible_direction_id_line(direction_id))
+        exit()
+
+    return x, y
+
+
 def execute_enemy_step(enemy_step: list):
+    """
+
+
+    :param enemy_step:
+    """
     if enemy_step[1] == 0:
         movement_direction_id: int = enemy_step[0].determine_movement_direction()
         enemy_step[0].move(movement_direction_id)
@@ -608,7 +688,7 @@ def main():
     player = Player(1, 1, 3)
 
     # Making class constants for the window
-    window = Window(48, 8, 8, 2/3, "Test", (0, 0, 0))
+    window = Window(48, 8, 8, 2/3, "Placeholder", (0, 0, 0))
     window.grid_lines = grid_lines
     window.grid_lines.window = window
     window.starting_tiles = [[0] * window.amount_of_tile_columns for _ in range(window.amount_of_tile_rows)]

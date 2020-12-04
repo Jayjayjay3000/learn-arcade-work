@@ -48,11 +48,10 @@ def greater_than_or_randomly_equal_to(a: float, b: float):
         return True
     elif a < b:
         return False
+    elif r.randrange(0, 2) == 0:
+        return True
     else:
-        if r.randrange(0, 2) == 0:
-            return True
-        else:
-            return False
+        return False
 
 
 def less_than_or_randomly_equal_to(a: float, b: float):
@@ -60,18 +59,17 @@ def less_than_or_randomly_equal_to(a: float, b: float):
         return True
     elif a > b:
         return False
+    elif r.randrange(0, 2) == 0:
+        return True
     else:
-        if r.randrange(0, 2) == 0:
-            return True
-        else:
-            return False
+        return False
 
 
-def sum_digits(testing_number: int, base: int = 10):
+def sum_digits(summing_number: int, base: int = 10):
     """
     Calculates the sum of a number's digits.
 
-    :param testing_number: number you want to sum the digits of.
+    :param summing_number: number you want to sum the digits of.
     :param base: base you want number to be in when summing digits.
     :return: sum of number's digits.
     """
@@ -79,9 +77,9 @@ def sum_digits(testing_number: int, base: int = 10):
     digit_sum: int = 0
 
     # Summing the number's digits
-    while testing_number:
+    while summing_number:
         # Adding a digit to the digit sum
-        digit_sum, testing_number = digit_sum + testing_number % base, testing_number // base  # *** A ***
+        digit_sum, summing_number = digit_sum + summing_number % base, summing_number // base  # *** A ***
 
     # Returning the digit sum
     return digit_sum
@@ -91,6 +89,90 @@ def random_element_from_list(list_to_get_element: list):
     random_index = r.randrange(0, len(list_to_get_element))
     random_element = list_to_get_element[random_index]
     return random_element
+
+
+def linear_search_through_list(key_element, searching_list: list):
+    """
+    Searches through a list one element at a time to find a specific item.
+
+    :param key_element: item you are looking for.
+    :param searching_list: list you are looking through.
+    :return: whether the item is in the list or not, and if it is, the location of the item within the list.
+    """
+    # Checking the entire list for the specified item
+    for current_list_index in range(len(searching_list)):
+        # Checking if the current list item is the specified item
+        if searching_list[current_list_index] == key_element:
+            # Returning that the item was found
+            return True, current_list_index
+
+    # Returning that the item was not found
+    return False, None
+
+
+def sort_list(list_to_sort: list):
+    """
+
+
+    :param list_to_sort:
+    :return:
+    """
+    # Start at the second element (pos 1).
+    # Use this element to insert into the
+    # list.
+    for key_index in range(1, len(list_to_sort)):
+
+        # Get the value of the element to insert
+        key_element = list_to_sort[key_index]
+
+        # Scan from right to the left (start of list)
+        scanning_index = key_index - 1
+
+        # Loop each element, moving them up until
+        # we reach the position the
+        while scanning_index >= 0 and greater_than_or_randomly_equal_to(list_to_sort[scanning_index], key_element):
+            list_to_sort[scanning_index + 1] = list_to_sort[scanning_index]
+            scanning_index = scanning_index - 1
+
+        # Everything's been moved out of the way, insert
+        # the key into the correct location
+        list_to_sort[scanning_index + 1] = key_element
+
+    return list_to_sort
+
+
+def sort_meta_list_by_element_of_sub_list(meta_list: list, key_sub_index: int = 0):
+    """
+
+
+    :param key_sub_index:
+    :param meta_list:
+    :return:
+    """
+    # Start at the second element (pos 1).
+    # Use this element to insert into the
+    # list.
+    for key_index in range(1, len(meta_list)):
+
+        # Get the value of the element to insert
+        key_sub_list = meta_list[key_index]
+        key_sub_element = key_sub_list[key_sub_index]
+
+        # Scan from right to the left (start of list)
+        scanning_index = key_index - 1
+
+        # Loop each element, moving them up until
+        # we reach the position the
+        while scanning_index >= 0 \
+                and greater_than_or_randomly_equal_to(meta_list[scanning_index][key_sub_index], key_sub_element):
+            meta_list[scanning_index + 1] = meta_list[scanning_index]
+            scanning_index = scanning_index - 1
+
+        # Everything's been moved out of the way, insert
+        # the key into the correct location
+        meta_list[scanning_index + 1] = key_sub_list
+
+    return meta_list
 
 
 def sum_list(list_to_sum: list):
