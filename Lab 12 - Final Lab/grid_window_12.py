@@ -2,6 +2,19 @@
 from window_12 import *
 import draw_shapes_12 as draw
 
+# Making constants
+NULL_DIRECTION = -1
+UP_DIRECTION = 0
+DOWN_DIRECTION = 1
+LEFT_DIRECTION = 2
+RIGHT_DIRECTION = 3
+
+
+# Defining get text functions
+def get_not_a_compatible_direction_id_line(direction_id: int):
+    line: str = f"Error: {direction_id} is not a compatible direction id"
+    return line
+
 
 # Defining classes
 class Window(Window):
@@ -37,6 +50,8 @@ class Window(Window):
         self.right_margin_width_ratio: float = right_margin_width_ratio
         self.right_margin_width = 0
         self.get_margin_widths_from_ratios()
+        self.out_of_bounds_id = None
+        self.mouse_on_grid = False
         self.grid_lines = None
 
         # Creating class attributes from other attributes
@@ -49,6 +64,52 @@ class Window(Window):
         self.bottom_margin_width: int = int(self.bottom_margin_width_ratio * self.tile_size)
         self.left_margin_width: int = int(self.left_margin_width_ratio * self.tile_size)
         self.right_margin_width: int = int(self.right_margin_width_ratio * self.tile_size)
+
+    def get_tile_position_from_position(self, x: float, y: float):
+        if self.left_margin_width <= x < self.width - self.right_margin_width:
+            tile_x: int = int((x - self.left_margin_width) // self.tile_size)
+        else:
+            tile_x: str = self.out_of_bounds_id
+        if self.bottom_margin_width <= (y - 1) < self.height - self.top_margin_width:
+            tile_y: int = int((y - self.bottom_margin_width - 1) // self.tile_size)
+        else:
+            tile_y: str = self.out_of_bounds_id
+
+        return tile_x, tile_y
+
+    def on_mouse_motion(self, mouse_x: float, mouse_y: float, mouse_dx: float, mouse_dy: float):
+        """
+
+        :param mouse_x:
+        :param mouse_y:
+        :param mouse_dx:
+        :param mouse_dy:
+        """
+        mouse_tile_x, mouse_tile_y = self.get_tile_position_from_position(mouse_x, mouse_y)
+        if mouse_tile_x == self.out_of_bounds_id or mouse_tile_y == self.out_of_bounds_id:
+            self.mouse_on_grid = False
+        else:
+            self.mouse_on_grid = True
+
+    def on_mouse_enter(self, mouse_x: int, mouse_y: int):
+        """
+
+        :param mouse_x:
+        :param mouse_y:
+        """
+        # [...]
+        super().on_mouse_enter(mouse_x, mouse_y)
+        self.mouse_on_grid = True
+
+    def on_mouse_leave(self, mouse_x: int, mouse_y: int):
+        """
+
+        :param mouse_x:
+        :param mouse_y:
+        """
+        # [...]
+        super().on_mouse_leave(mouse_x, mouse_y)
+        self.mouse_on_grid = False
 
 
 class Lines(draw.Able):
@@ -94,3 +155,31 @@ class Lines(draw.Able):
         This drawable's on draw method.
         """
         pass
+
+
+def get_coordinates_from_direction_id(direction_id: int):
+    """
+
+
+    :param direction_id:
+    :return:
+    """
+    if direction_id == LEFT_DIRECTION:
+        x: int = -1
+    elif direction_id == RIGHT_DIRECTION:
+        x: int = 1
+    else:
+        x: int = 0
+
+    if direction_id == UP_DIRECTION:
+        y: int = 1
+    elif direction_id == DOWN_DIRECTION:
+        y: int = -1
+    else:
+        y: int = 0
+
+    if x == 0 and y == 0 and direction_id != NULL_DIRECTION:
+        print(get_not_a_compatible_direction_id_line(direction_id))
+        exit()
+
+    return x, y

@@ -26,6 +26,7 @@ class Window(arcade.Window):
 
         # Setting additional class attributes
         self.color = background_color
+        self.mouse_on_window: bool = False
 
         # Setting the window's background color
         arcade.set_background_color(self.color)
@@ -36,3 +37,21 @@ class Window(arcade.Window):
         """
         # Starting to render the window
         arcade.start_render()
+
+    def on_mouse_enter(self, mouse_x: int, mouse_y: int):
+        """
+
+        :param mouse_x:
+        :param mouse_y:
+        """
+        # [...]
+        self.mouse_on_window = True
+
+    def on_mouse_leave(self, mouse_x: int, mouse_y: int):
+        """
+
+        :param mouse_x:
+        :param mouse_y:
+        """
+        # [...]
+        self.mouse_on_window = False

@@ -7,20 +7,8 @@ import numpyplus_12 as np
 import grid_window_12 as grid
 import draw_on_grid_12 as draw
 
-# Making constants
-NULL_DIRECTION = -1
-UP_DIRECTION = 0
-DOWN_DIRECTION = 1
-LEFT_DIRECTION = 2
-RIGHT_DIRECTION = 3
-
 
 # Defining get text functions
-def get_not_a_compatible_direction_id_line(direction_id: int):
-    line: str = f"Error: {direction_id} is not a compatible direction id"
-    return line
-
-
 def get_not_a_compatible_enemy_step_line(enemy_step):
     line: str = f"Error: {enemy_step} is not a compatible enemy step"
     return line
@@ -45,7 +33,6 @@ class Window(draw.Window):
         self.drawables: list = self.drawables
         self.starting_tiles = None
         self.grid_tiles = None
-        self.out_of_bounds_id = None
         self.phase_id = None
         self.player = None
         self.movement_step_bar = None
@@ -189,24 +176,38 @@ class Window(draw.Window):
             print(self.get_not_a_compatible_phase_id_line())
             exit()
 
+    def on_mouse_motion(self, mouse_x: float, mouse_y: float, mouse_dx: float, mouse_dy: float):
+        super().on_mouse_motion(mouse_x, mouse_y, mouse_dx, mouse_dy)
+        mouse_tile_x, mouse_tile_y = self.get_tile_position_from_position(mouse_x, mouse_y)
+        if mouse_tile_x != self.out_of_bounds_id and mouse_tile_y != self.out_of_bounds_id:
+            is_mouse_tile_aligned_with_player, player_direction_id \
+                = self.player.is_aligned_with_tile(mouse_tile_x, mouse_tile_y)
+            self.player.mouse_location_direction = player_direction_id
+            if is_mouse_tile_aligned_with_player and self.player.mouse_location_direction != grid.NULL_DIRECTION:
+                self.player.can_shoot_on_mouse_location = True
+                self.player.shooting_indicator.tile_x = mouse_tile_x
+                self.player.shooting_indicator.tile_y = mouse_tile_y
+                self.player.shooting_indicator.set_position_from_tile_and_offset()
+            else:
+                self.player.can_shoot_on_mouse_location = False
+
+    def on_mouse_leave(self, mouse_x: int, mouse_y: int):
+        super().on_mouse_leave(mouse_x, mouse_y)
+        self.player.can_shoot_on_mouse_location = False
+        self.player.mouse_location_direction = None
+
     def on_mouse_press(self, mouse_x: float, mouse_y: float, mouse_button: int, modifiers: int):
         if modifiers == modifiers:
-            mouse_tile_x: int = mouse_x // self.tile_size
-            if mouse_y <= self.bottom_margin_width:
-                mouse_tile_y: str = self.out_of_bounds_id
-            else:
-                mouse_tile_y: int = (mouse_y - self.bottom_margin_width - 1) // self.tile_size
+            mouse_tile_x, mouse_tile_y = self.get_tile_position_from_position(mouse_x, mouse_y)
 
             if self.player.can_shoot is None:
                 print(self.player.get_ability_to_shoot_not_set_line())
                 exit()
 
-            elif mouse_button == MOUSE_BUTTON_LEFT:
-                if self.player.can_shoot and not self.player.has_shot:
-                    is_mouse_tile_aligned_with_player, player_direction_id \
-                        = self.player.is_aligned_with_tile(mouse_tile_x, mouse_tile_y)
-                    if is_mouse_tile_aligned_with_player and player_direction_id != NULL_DIRECTION:
-                        self.player.shoot(player_direction_id)
+            elif mouse_tile_x != self.out_of_bounds_id and mouse_tile_y != self.out_of_bounds_id:
+                if mouse_button == MOUSE_BUTTON_LEFT and self.player.can_shoot and not self.player.has_shot:
+                    if self.player.can_shoot_on_mouse_location:
+                        self.player.shoot(self.player.mouse_location_direction)
                     else:
                         print("Not a place you can shoot at")
 
@@ -221,13 +222,13 @@ class Window(draw.Window):
 
             elif self.player.can_move and not self.player.has_moved:
                 if pressed_key == key.W:
-                    self.player.move(UP_DIRECTION)
+                    self.player.move(grid.UP_DIRECTION)
                 elif pressed_key == key.S:
-                    self.player.move(DOWN_DIRECTION)
+                    self.player.move(grid.DOWN_DIRECTION)
                 elif pressed_key == key.A:
-                    self.player.move(LEFT_DIRECTION)
+                    self.player.move(grid.LEFT_DIRECTION)
                 elif pressed_key == key.D:
-                    self.player.move(RIGHT_DIRECTION)
+                    self.player.move(grid.RIGHT_DIRECTION)
 
     def on_game_over(self):
         self.phase_id = -1
@@ -257,7 +258,7 @@ class GridLines(grid.Lines, Drawable):
         self.draw()
 
 
-class UICounter(Drawable):
+class TwoColorUI(Drawable):
     def __init__(self):
         super().__init__()
         self.empty_color = None
@@ -271,7 +272,7 @@ class UICounter(Drawable):
         self.set_empty_full_color_from_empty_color_and_transparency()
 
 
-class StepBar(UICounter):
+class StepBar(TwoColorUI):
     Y_UI_RATIO = 1/2
     SIZE_RATIO = 1/4
     WIDTH = 2
@@ -385,6 +386,23 @@ class Entity(Drawable):
     def draw(self):
         draw.square_outline(self.x, self.y, self.size, self.full_color, self.line_width, self.tilt_angle)
 
+    def is_aligned_with_tile(self, other_tile_x: int, other_tile_y: int):
+        if other_tile_x == self.tile_x or other_tile_y == self.tile_y:
+            if other_tile_x == self.tile_x:
+                if other_tile_y > self.tile_y:
+                    return True, grid.UP_DIRECTION
+                elif other_tile_y < self.tile_y:
+                    return True, grid.DOWN_DIRECTION
+                return True, grid.NULL_DIRECTION
+            elif other_tile_x < self.tile_x:
+                return True, grid.LEFT_DIRECTION
+            return True, grid.RIGHT_DIRECTION
+        return False, None
+
+    def get_distance_from_tile(self, other_tile_x: int, other_tile_y: int):
+        distance: float = np.distance_of_two_points((self.tile_x, self.tile_y), (other_tile_x, other_tile_y))
+        return distance
+
     def full_heal(self):
         self.current_health: int = self.max_health
 
@@ -406,7 +424,7 @@ class Entity(Drawable):
             self.die()
 
     def move(self, direction_id: int):
-        x_direction, y_direction = get_coordinates_from_direction_id(direction_id)
+        x_direction, y_direction = grid.get_coordinates_from_direction_id(direction_id)
         resulting_tile_x: int = self.tile_x + x_direction
         resulting_tile_y: int = self.tile_y + y_direction
 
@@ -431,7 +449,7 @@ class Entity(Drawable):
     def shoot(self, direction_id: int):
         shot_tile_x: int = self.tile_x
         shot_tile_y: int = self.tile_y
-        x_direction, y_direction = get_coordinates_from_direction_id(direction_id)
+        x_direction, y_direction = grid.get_coordinates_from_direction_id(direction_id)
 
         while True:
             shot_tile_x += x_direction
@@ -477,27 +495,14 @@ class Player(Entity):
         self.can_move: bool = self.CAN_INITIALLY_MOVE
         self.can_jab: bool = self.CAN_INITIALLY_JAB
         self.can_shoot: bool = self.CAN_INITIALLY_SHOOT
+        self.can_shoot_on_mouse_location: bool = False
+        self.mouse_location_direction = None
+        self.shooting_indicator = ShootingIndicator(self)
 
     def on_draw(self):
         self.draw()
         self.health_bar.on_draw()
-
-    def is_aligned_with_tile(self, other_tile_x: int, other_tile_y: int):
-        if other_tile_x == self.tile_x or other_tile_y == self.tile_y:
-            if other_tile_x == self.tile_x:
-                if other_tile_y > self.tile_y:
-                    return True, UP_DIRECTION
-                elif other_tile_y < self.tile_y:
-                    return True, DOWN_DIRECTION
-                return True, NULL_DIRECTION
-            elif other_tile_x < self.tile_x:
-                return True, LEFT_DIRECTION
-            return True, RIGHT_DIRECTION
-        return False, None
-
-    def get_distance_from_tile(self, other_tile_x: int, other_tile_y: int):
-        distance: float = np.distance_of_two_points((self.tile_x, self.tile_y), (other_tile_x, other_tile_y))
-        return distance
+        self.shooting_indicator.on_draw()
 
 
 class Enemy(Entity):
@@ -516,9 +521,9 @@ class Enemy(Entity):
         window = self.window
         player = window.player
         surrounding_tile_x_offsets: list \
-            = [get_coordinates_from_direction_id(current_direction_id)[0] for current_direction_id in range(4)]
+            = [grid.get_coordinates_from_direction_id(current_direction_id)[0] for current_direction_id in range(4)]
         surrounding_tile_y_offsets: list \
-            = [get_coordinates_from_direction_id(current_direction_id)[1] for current_direction_id in range(4)]
+            = [grid.get_coordinates_from_direction_id(current_direction_id)[1] for current_direction_id in range(4)]
         surrounding_tile_x_values: list \
             = [self.tile_x + current_offset for current_offset in surrounding_tile_x_offsets]
         surrounding_tile_y_values: list \
@@ -576,7 +581,7 @@ class FistsPerson(Enemy):
         self.health_bar.draw()
 
 
-class HealthBar(UICounter):
+class HealthBar(TwoColorUI):
     TILE_X_OFFSET_RATIO: float = 1/2
     TILE_Y_OFFSET_RATIO: float = 7/8
     SIZE_SEGMENT_DISTANCE_RATIO: float = 2/3
@@ -632,35 +637,30 @@ class HealthBar(UICounter):
         self.draw()
 
 
+class ShootingIndicator(Drawable):
+    TILE_X_OFFSET_RATIO: float = 1/2
+    TILE_Y_OFFSET_RATIO: float = 1/2
+    COLOR = (255, 255, 255)
+    LINE_WIDTH: float = 2
+
+    def __init__(self, player):
+        super().__init__()
+        self.tile_x_offset_ratio: float = self.TILE_X_OFFSET_RATIO
+        self.tile_y_offset_ratio: float = self.TILE_Y_OFFSET_RATIO
+        self.color = self.COLOR
+        self.set_full_color_from_color_and_transparency()
+        self.line_width: float = self.LINE_WIDTH
+        self.player = player
+
+    def draw(self):
+        if self.player.can_shoot_on_mouse_location:
+            draw.line(self.window.player.x, self.window.player.y, self.x, self.y, self.full_color, self.line_width)
+
+    def on_draw(self):
+        self.draw()
+
+
 # Defining functions
-def get_coordinates_from_direction_id(direction_id: int):
-    """
-
-
-    :param direction_id:
-    :return:
-    """
-    if direction_id == LEFT_DIRECTION:
-        x: int = -1
-    elif direction_id == RIGHT_DIRECTION:
-        x: int = 1
-    else:
-        x: int = 0
-
-    if direction_id == UP_DIRECTION:
-        y: int = 1
-    elif direction_id == DOWN_DIRECTION:
-        y: int = -1
-    else:
-        y: int = 0
-
-    if x == 0 and y == 0:
-        print(get_not_a_compatible_direction_id_line(direction_id))
-        exit()
-
-    return x, y
-
-
 def execute_enemy_step(enemy_step: list):
     """
 
@@ -694,6 +694,8 @@ def main():
     window.starting_tiles = [[0] * window.amount_of_tile_columns for _ in range(window.amount_of_tile_rows)]
     window.starting_tiles[6][6] = 1
     window.starting_tiles[0][7] = 1
+    window.starting_tiles[7][7] = 1
+    window.starting_tiles[7][0] = 1
     window.out_of_bounds_id = "OoB"
     window.player = player
     window.player.window = window
@@ -703,6 +705,7 @@ def main():
     window.player.health_bar.set_segment_distance_from_ratio()
     window.player.health_bar.set_size_tile_ratio_from_segment_distance_ratio()
     window.player.health_bar.set_size_from_tile_ratio()
+    window.player.shooting_indicator.window = window
     window.movement_step_bar = movement_step_bar
     window.movement_step_bar.window = window
     window.movement_step_bar.set_x_from_ratio()
