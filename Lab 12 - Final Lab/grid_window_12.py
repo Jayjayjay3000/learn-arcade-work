@@ -50,6 +50,8 @@ class Window(Window):
         self.right_margin_width_ratio: float = right_margin_width_ratio
         self.right_margin_width = 0
         self.get_margin_widths_from_ratios()
+        self.mouse_tile_x = None
+        self.mouse_tile_y = None
         self.out_of_bounds_id = None
         self.mouse_on_grid = False
         self.grid_lines = None
@@ -77,16 +79,26 @@ class Window(Window):
 
         return tile_x, tile_y
 
+    def update_mouse_tile_position(self):
+        """
+
+        """
+        mouse_tile_x, mouse_tile_y = self.get_tile_position_from_position(self.mouse_x, self.mouse_y)
+        self.mouse_tile_x = mouse_tile_x
+        self.mouse_tile_y = mouse_tile_y
+
     def on_mouse_motion(self, mouse_x: float, mouse_y: float, mouse_dx: float, mouse_dy: float):
         """
+
 
         :param mouse_x:
         :param mouse_y:
         :param mouse_dx:
         :param mouse_dy:
         """
-        mouse_tile_x, mouse_tile_y = self.get_tile_position_from_position(mouse_x, mouse_y)
-        if mouse_tile_x == self.out_of_bounds_id or mouse_tile_y == self.out_of_bounds_id:
+        super().on_mouse_motion(mouse_x, mouse_y, mouse_dx, mouse_dy)
+        self.update_mouse_tile_position()
+        if self.mouse_tile_x == self.out_of_bounds_id or self.mouse_tile_y == self.out_of_bounds_id:
             self.mouse_on_grid = False
         else:
             self.mouse_on_grid = True
@@ -94,22 +106,38 @@ class Window(Window):
     def on_mouse_enter(self, mouse_x: int, mouse_y: int):
         """
 
+
         :param mouse_x:
         :param mouse_y:
         """
         # [...]
         super().on_mouse_enter(mouse_x, mouse_y)
+        self.update_mouse_tile_position()
         self.mouse_on_grid = True
 
     def on_mouse_leave(self, mouse_x: int, mouse_y: int):
         """
+
 
         :param mouse_x:
         :param mouse_y:
         """
         # [...]
         super().on_mouse_leave(mouse_x, mouse_y)
+        self.update_mouse_tile_position()
         self.mouse_on_grid = False
+
+    def on_mouse_press(self, mouse_x: float, mouse_y: float, mouse_button: int, modifiers: int):
+        """
+
+
+        :param mouse_x:
+        :param mouse_y:
+        :param mouse_button:
+        :param modifiers:
+        """
+        super().on_mouse_press(mouse_x, mouse_y, mouse_button, modifiers)
+        self.update_mouse_tile_position()
 
 
 class Lines(draw.Able):
