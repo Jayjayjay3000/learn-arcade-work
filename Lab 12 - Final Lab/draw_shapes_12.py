@@ -1,14 +1,14 @@
 # Importing libraries
 import numpy as np
-from arcade import draw_line as line
-from arcade import draw_rectangle_outline as rectangle_outline
-from arcade import draw_rectangle_filled as rectangle_filled
-from arcade import draw_arc_outline as arc_outline
-from window_12 import *
+from arcade import draw_line as line, \
+    draw_rectangle_outline as rectangle_outline, \
+    draw_rectangle_filled as rectangle_filled, \
+    draw_arc_outline as arc_outline
+import window_12 as w
 
 
 # Defining classes
-class Window(Window):
+class Window(w.Window):
     """
     Class for windows you can draw on.
     """

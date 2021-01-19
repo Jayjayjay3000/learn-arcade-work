@@ -1,5 +1,5 @@
 # Importing libraries
-from window_12 import *
+import window_12 as w
 import draw_shapes_12 as draw
 
 # Making constants
@@ -17,7 +17,7 @@ def get_not_a_compatible_direction_id_line(direction_id: int):
 
 
 # Defining classes
-class Window(Window):
+class Window(w.Window):
     """
     Class for windows with grids.
     """

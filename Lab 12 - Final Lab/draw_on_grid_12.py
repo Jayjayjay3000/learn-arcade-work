@@ -1,10 +1,10 @@
 # Importing libraries
 import grid_window_12 as grid
-from draw_shapes_12 import *
+import draw_shapes_12 as draw
 
 
 # Defining classes
-class Window(grid.Window, Window):
+class Window(grid.Window, draw.Window):
     """
     Class for windows with grids you can draw on.
     """
@@ -25,7 +25,7 @@ class Window(grid.Window, Window):
                          left_margin_width_ratio, right_margin_width_ratio)
 
 
-class Able(Able):
+class Able(draw.Able):
     """
     Class for generic things you can draw on a grid.
     """
@@ -66,3 +66,46 @@ class Able(Able):
         Sets this drawable's size depending on its ratio to the size of the grid tile it's drawn on.
         """
         self.size: float = self.size_tile_ratio * self.window.tile_size
+
+
+# Defining functions
+def line(start_x: float, start_y: float, end_x: float, end_y: float, color, line_width: float = 1):
+    """
+    Draw a line.
+
+    :param float start_x: x position of line starting point.
+    :param float start_y: y position of line starting point.
+    :param float end_x: x position of line ending point.
+    :param float end_y: y position of line ending point.
+    :param Color color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
+    :param float line_width: Width of the line in pixels.
+    """
+    draw.line(start_x, start_y, end_x, end_y, color, line_width)
+
+
+def cl_horizontal_line(center_x: float, length: float, y: float, color, line_width: float = 1):
+    """
+    Draw a horizontal line by specifying center point and length.
+
+    :param center_x: x position of line center point.
+    :param length: length of line.
+    :param y: y position of line starting and ending points.
+    :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
+    :param line_width: Width of the line in pixels.
+    """
+    draw.cl_horizontal_line(center_x, length, y, color, line_width)
+
+
+def square_outline(center_x: float, center_y: float, side_length: float, color,
+                   border_width: float = 1, tilt_angle: float = 0):
+    """
+    Draw a square outline.
+
+    :param center_x: x coordinate of square center.
+    :param center_y: y coordinate of square center.
+    :param side_length: length of the square's sides.
+    :param color: color, specified in a list of 3 or 4 bytes in RGB or RGBA format.
+    :param border_width: width of the lines, in pixels.
+    :param tilt_angle: rotation of the square. Defaults to zero.
+    """
+    draw.square_outline(center_x, center_y, side_length, color, border_width, tilt_angle)

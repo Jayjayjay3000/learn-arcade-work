@@ -1,7 +1,5 @@
 # Importing libraries
-from arcade import MOUSE_BUTTON_LEFT
-from arcade import key
-from arcade import run
+from arcade import MOUSE_BUTTON_LEFT, key, run
 import random as r
 import numpyplus_12 as np
 import grid_window_12 as grid
@@ -477,9 +475,9 @@ class Entity(Drawable):
     def reset_step_attributes(self, reset_state: bool = False):
         if self.can_move is None or self.can_shoot is None:
             if self.can_move is None:
-                print(self.player.get_ability_to_move_not_set_line)
+                print(self.get_ability_to_move_not_set_line)
             if self.can_shoot is None:
-                print(self.player.get_ability_to_shoot_not_set_line)
+                print(self.get_ability_to_shoot_not_set_line)
             exit()
 
         if self.can_move:
